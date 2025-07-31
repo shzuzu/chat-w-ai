@@ -1,0 +1,608 @@
+:root {
+    --discord-dark: #36393f;
+    --discord-darker: #2f3136;
+    --discord-darkest: #202225;
+    --discord-light: #dcddde;
+    --discord-lighter: #b9bbbe;
+    --discord-accent: #5865f2;
+    --discord-green: #3ba55c;
+    --discord-red: #ed4245;
+}
+
+body {
+    background-color: var(--discord-dark);
+    color: var(--discord-light);
+    height: 100vh;
+    overflow: hidden;
+    font-family: "Montserrat", sans-serif;
+}
+
+.sidebar {
+    background-color: var(--discord-darker);
+    height: 100vh;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.server-list {
+    background-color: var(--discord-darkest);
+    height: 100vh;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Montserrat", sans-serif;
+}
+
+.server-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--discord-darker);
+    border-radius: 50%;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-radius 0.2s;
+    color: white;
+    font-size: 20px;
+}
+
+.server-icon:hover {
+    border-radius: 30%;
+    background-color: var(--discord-accent);
+}
+
+.server-icon.active {
+    border-radius: 30%;
+    background-color: var(--discord-accent);
+}
+
+.channel-list {
+    padding: 0 10px;
+    height: 100%;
+    overflow-y: auto;
+    font-family: "Montserrat", sans-serif;
+}
+
+.channel-category {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--discord-lighter);
+    margin-top: 20px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.add-chat-btn {
+    cursor: pointer;
+    color: var(--discord-lighter);
+    font-size: 16px;
+}
+
+.add-chat-btn:hover {
+    color: var(--discord-light);
+}
+
+.channel-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    color: var(--discord-lighter);
+    position: relative;
+}
+
+.channel-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--discord-light);
+}
+
+.channel-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.channel-icon {
+    margin-right: 6px;
+    font-size: 18px;
+}
+
+.delete-channel {
+    display: none;
+    position: absolute;
+    right: 8px;
+    color: var(--discord-red);
+    cursor: pointer;
+}
+
+.channel-item:hover .delete-channel {
+    display: block;
+}
+
+.channels-container {
+    display: block;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+}
+
+.channels-container.collapsed {
+    max-height: 0;
+}
+
+.chat-area {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: "Montserrat", sans-serif;
+}
+
+.chat-header {
+    background-color: var(--discord-dark);
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    font-family: "Montserrat", sans-serif;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    font-family: "Montserrat", sans-serif;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 20px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--discord-accent);
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.message-author {
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.message-text {
+    color: var(--discord-light);
+    text-align: justify;
+    font-family: "Montserrat", sans-serif;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.message-content {
+    flex-grow: 1;
+    font-family: "Montserrat", sans-serif;
+    min-width: 0;
+}
+
+.assistant-message .message-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #43b581;
+    flex-shrink: 0;
+}
+
+.chat-input-area {
+    padding: 15px 20px;
+    background-color: var(--discord-dark);
+    display: flex;
+    align-items: center;
+}
+
+.chat-input {
+    background-color: #40444b;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    margin-right: 10px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.chat-input:focus {
+    outline: none;
+}
+
+.send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--discord-accent);
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+.send-button:hover {
+    background-color: #4752c4;
+}
+
+.loading-indicator {
+    background: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--discord-lighter);
+    margin: 10px 0;
+    font-family: "Montserrat", sans-serif;
+    z-index: 2000;
+}
+
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid var(--discord-accent);
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+.modal {
+    color: #333;
+    font-family: "Montserrat", sans-serif;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.chevron-icon {
+    transition: transform 0.3s ease;
+}
+
+.chevron-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* Markdown-контент */
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+    margin: 1rem 0;
+    font-weight: 600;
+}
+
+.message-content p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.message-content ul,
+.message-content ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+/* Фикс для темной темы */
+.hljs {
+    color: #e1e4e8 !important;
+    background: #2d333b !important;
+}
+
+.message-content pre {
+    background: #2d333b;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.message-content blockquote {
+    border-left: 3px solid #dee2e6;
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+    color: #6c757d;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+/* Мобильная навигация */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--discord-darkest);
+    padding: 10px;
+    z-index: 100;
+}
+
+.nav-btn {
+    background-color: var(--discord-darker);
+    border: none;
+    color: var(--discord-light);
+    padding: 8px 12px;
+    border-radius: 25%;
+    margin: 0 5px;
+}
+
+.nav-btn.active {
+    background-color: var(--discord-accent);
+}
+.server-icon[data-model="gigachat"] {
+    background-color: #111317; /* Синий цвет для GigaChat */
+}
+
+.server-icon[data-model="grok"] {
+    background-color: #000000; /* Фиолетовый цвет для Grok */
+}
+
+.server-icon[data-model="gigachat"]:hover,
+.server-icon[data-model="gigachat"].active {
+    background-color: #111317; /* Темно-синий при наведении/активном */
+}
+
+.server-icon[data-model="grok"]:hover,
+.server-icon[data-model="grok"].active {
+    background-color: var(
+        --discord-dark
+    ); /* Темно-фиолетовый при наведении/активном */
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 768px) {
+    #grok-server-icon {
+        width: 120px;
+        height: 120px;
+        padding: 15px;
+        margin: 20px;
+        border-radius: 30%;
+    }
+    #giga-server-icon {
+        width: 120px;
+        height: 120px;
+        padding: 15px;
+        margin: 20px;
+        border-radius: 30%;
+    }
+
+    /* Увеличение при нажатии */
+    #grok-server-icon:active {
+        transform: scale(1.1);
+    }
+
+    .server-column {
+        width: 100% !important;
+        background-color: var(--discord-darkest);
+    }
+
+    .server-list {
+        padding: 20px 0;
+        width: 100%;
+        overflow-y: auto;
+    }
+
+    /* Увеличиваем размер иконок серверов */
+    .server-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+        font-size: 24px;
+    }
+
+    /* Добавляем анимацию при открытии */
+    .server-column {
+        transition: transform 0.3s ease;
+        transform: translateX(-100%);
+    }
+
+    .server-column.active {
+        transform: translateX(0);
+    }
+
+    /* Заголовок для мобильных */
+    .mobile-server-title {
+        color: var(--discord-light);
+        font-size: 1.2rem;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Улучшаем отступы */
+    .server-list {
+        padding: 15px 0;
+    }
+
+    /* Увеличиваем область нажатия */
+    .server-icon {
+        padding: 10px;
+    }
+
+    .loading-indicator {
+        margin-bottom: 80px;
+    }
+    #toggle-channels {
+        display: none !important;
+    }
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        width: 220px !important;
+        z-index: 1000;
+    }
+
+    .server-column {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .mobile-nav {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .chat-area {
+        padding-bottom: 60px; /* Чтобы сообщения не перекрывались панелью навигации */
+    }
+
+    .chat-input-area {
+        padding: 10px;
+        position: fixed;
+        bottom: 60px; /* Высота mobile-nav + отступ */
+        left: 0;
+        right: 0;
+        background-color: var(--discord-darkest);
+        z-index: 101; /* Выше, чем mobile-nav */
+    }
+
+    .chat-input {
+        padding: 8px;
+    }
+
+    .send-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        margin-right: 10px;
+    }
+
+    .message-text {
+        font-size: 0.9rem;
+        overflow-wrap: anywhere !important;
+    }
+
+    .message-content {
+        max-width: 85vw;
+    }
+
+    .message-content pre {
+        white-space: pre-wrap !important;
+    }
+
+    .message-content code.hljs {
+        white-space: pre-wrap !important;
+        font-size: 11px;
+        text-align: left;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .server-column.active {
+        left: 0;
+    }
+
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .overlay.active {
+        display: block;
+    }
+
+    /* Увеличение области нажатия для мобильных устройств */
+    .channel-item,
+    .server-icon {
+        padding: 8px;
+        margin-bottom: 5px;
+    }
+
+    /* Улучшение видимости текста в каналах */
+    .channel-item {
+        font-size: 1rem;
+    }
+
+    /* Улучшение читаемости заголовков */
+    .chat-header {
+        font-size: 1.1rem;
+    }
+}
+/* Стили для кнопки закрытия */
+#close-server-list {
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    z-index: 1001;
+}
+
+#close-server-list:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+    color: var(--discord-red) !important;
+}
+
+/* Адаптация для маленьких экранов */
+@media (max-width: 400px) {
+    .mobile-server-title {
+        padding: 12px !important;
+    }
+
+    #close-server-list {
+        right: 8px !important;
+        font-size: 1.2rem;
+    }
+}
+
+/* Скрываем на десктопной версии */
+@media (min-width: 769px) {
+    #close-server-list {
+        display: none !important;
+    }
+}
