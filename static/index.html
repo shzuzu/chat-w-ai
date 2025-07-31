@@ -1,0 +1,1854 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+        </style>
+        <meta charset="UTF-8" />
+        <!-- Правильный viewport для мобильных устройств -->
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>AI Chat</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="/image/favicon-96x96.png"
+            sizes="96x96"
+        />
+        <link rel="icon" type="image/svg+xml" href="/image/favicon.svg" />
+        <link rel="shortcut icon" href="/image/favicon.ico" />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/image/apple-touch-icon.png"
+        />
+        <meta name="apple-mobile-web-app-title" content="AI Chat" />
+        <link rel="manifest" href="/image/site.webmanifest" />
+        <style>
+            :root {
+                --discord-dark: #36393f;
+                --discord-darker: #2f3136;
+                --discord-darkest: #202225;
+                --discord-light: #dcddde;
+                --discord-lighter: #b9bbbe;
+                --discord-accent: #5865f2;
+                --discord-green: #3ba55c;
+                --discord-red: #ed4245;
+            }
+
+            body {
+                background-color: var(--discord-dark);
+                color: var(--discord-light);
+                height: 100vh;
+                overflow: hidden;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .sidebar {
+                background-color: var(--discord-darker);
+                height: 100vh;
+                padding: 0;
+                transition: all 0.3s ease;
+            }
+
+            .server-list {
+                background-color: var(--discord-darkest);
+                height: 100vh;
+                padding: 12px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .server-icon {
+                width: 48px;
+                height: 48px;
+                background-color: var(--discord-darker);
+                border-radius: 50%;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: border-radius 0.2s;
+                color: white;
+                font-size: 20px;
+            }
+
+            .server-icon:hover {
+                border-radius: 30%;
+                background-color: var(--discord-accent);
+            }
+
+            .server-icon.active {
+                border-radius: 30%;
+                background-color: var(--discord-accent);
+            }
+
+            .channel-list {
+                padding: 0 10px;
+                height: 100%;
+                overflow-y: auto;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .channel-category {
+                text-transform: uppercase;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--discord-lighter);
+                margin-top: 20px;
+                margin-bottom: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+            }
+
+            .add-chat-btn {
+                cursor: pointer;
+                color: var(--discord-lighter);
+                font-size: 16px;
+            }
+
+            .add-chat-btn:hover {
+                color: var(--discord-light);
+            }
+
+            .channel-item {
+                display: flex;
+                align-items: center;
+                padding: 6px 8px;
+                border-radius: 4px;
+                margin-bottom: 2px;
+                cursor: pointer;
+                color: var(--discord-lighter);
+                position: relative;
+            }
+
+            .channel-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: var(--discord-light);
+            }
+
+            .channel-item.active {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+
+            .channel-icon {
+                margin-right: 6px;
+                font-size: 18px;
+            }
+
+            .delete-channel {
+                display: none;
+                position: absolute;
+                right: 8px;
+                color: var(--discord-red);
+                cursor: pointer;
+            }
+
+            .channel-item:hover .delete-channel {
+                display: block;
+            }
+
+            .channels-container {
+                display: block;
+                transition: max-height 0.3s ease;
+                overflow: hidden;
+            }
+
+            .channels-container.collapsed {
+                max-height: 0;
+            }
+
+            .chat-area {
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .chat-header {
+                background-color: var(--discord-dark);
+                padding: 10px 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .chat-messages {
+                flex-grow: 1;
+                padding: 20px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .message {
+                display: flex;
+                margin-bottom: 20px;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .message-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: var(--discord-accent);
+                margin-right: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+
+            .message-author {
+                font-weight: 500;
+                margin-bottom: 5px;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .message-text {
+                color: var(--discord-light);
+                text-align: justify;
+                font-family: "Montserrat", sans-serif;
+                overflow-wrap: break-word;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .message-content {
+                flex-grow: 1;
+                font-family: "Montserrat", sans-serif;
+                min-width: 0;
+            }
+
+            .assistant-message .message-avatar {
+                width: 40px;
+                height: 40px;
+                background-color: #43b581;
+                flex-shrink: 0;
+            }
+
+            .chat-input-area {
+                padding: 15px 20px;
+                background-color: var(--discord-dark);
+                display: flex;
+                align-items: center;
+            }
+
+            .chat-input {
+                background-color: #40444b;
+                border: none;
+                border-radius: 8px;
+                color: white;
+                padding: 12px;
+                width: 100%;
+                margin-right: 10px;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            .chat-input:focus {
+                outline: none;
+            }
+
+            .send-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: var(--discord-accent);
+                color: white;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: background-color 0.2s;
+            }
+
+            .send-button:hover {
+                background-color: #4752c4;
+            }
+
+            .loading-indicator {
+                background: none;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                color: var(--discord-lighter);
+                margin: 10px 0;
+                font-family: "Montserrat", sans-serif;
+                z-index: 2000;
+            }
+
+            .spinner {
+                border: 3px solid rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+                border-top: 3px solid var(--discord-accent);
+                width: 20px;
+                height: 20px;
+                animation: spin 1s linear infinite;
+                margin-right: 10px;
+            }
+
+            .modal {
+                color: #333;
+                font-family: "Montserrat", sans-serif;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .chevron-icon {
+                transition: transform 0.3s ease;
+            }
+
+            .chevron-icon.collapsed {
+                transform: rotate(-90deg);
+            }
+
+            /* Markdown-контент */
+            .message-content h1,
+            .message-content h2,
+            .message-content h3 {
+                margin: 1rem 0;
+                font-weight: 600;
+            }
+
+            .message-content p {
+                margin: 0.5rem 0;
+                line-height: 1.5;
+            }
+
+            .message-content ul,
+            .message-content ol {
+                padding-left: 1.5rem;
+                margin: 0.5rem 0;
+            }
+
+            /* Фикс для темной темы */
+            .hljs {
+                color: #e1e4e8 !important;
+                background: #2d333b !important;
+            }
+
+            .message-content pre {
+                background: #2d333b;
+                padding: 1rem;
+                border-radius: 4px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+
+            .message-content pre code {
+                background: none;
+                padding: 0;
+            }
+
+            .message-content blockquote {
+                border-left: 3px solid #dee2e6;
+                margin: 0.5rem 0;
+                padding-left: 1rem;
+                color: #6c757d;
+            }
+
+            .copy-btn {
+                background: none;
+                border: none;
+                padding: 4px;
+                cursor: pointer;
+                color: #6c757d;
+            }
+
+            /* Мобильная навигация */
+            .mobile-nav {
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: var(--discord-darkest);
+                padding: 10px;
+                z-index: 100;
+            }
+
+            .nav-btn {
+                background-color: var(--discord-darker);
+                border: none;
+                color: var(--discord-light);
+                padding: 8px 12px;
+                border-radius: 25%;
+                margin: 0 5px;
+            }
+
+            .nav-btn.active {
+                background-color: var(--discord-accent);
+            }
+            .server-icon[data-model="gigachat"] {
+                background-color: #111317; /* Синий цвет для GigaChat */
+            }
+
+            .server-icon[data-model="grok"] {
+                background-color: #000000; /* Фиолетовый цвет для Grok */
+            }
+
+            .server-icon[data-model="gigachat"]:hover,
+            .server-icon[data-model="gigachat"].active {
+                background-color: #111317; /* Темно-синий при наведении/активном */
+            }
+
+            .server-icon[data-model="grok"]:hover,
+            .server-icon[data-model="grok"].active {
+                background-color: var(
+                    --discord-dark
+                ); /* Темно-фиолетовый при наведении/активном */
+            }
+
+            /* Медиа-запросы для мобильных устройств */
+            @media (max-width: 768px) {
+                #grok-server-icon {
+                    width: 120px;
+                    height: 120px;
+                    padding: 15px;
+                    margin: 20px;
+                    border-radius: 30%;
+                }
+                #giga-server-icon {
+                    width: 120px;
+                    height: 120px;
+                    padding: 15px;
+                    margin: 20px;
+                    border-radius: 30%;
+                }
+
+                /* Увеличение при нажатии */
+                #grok-server-icon:active {
+                    transform: scale(1.1);
+                }
+
+                .server-column {
+                    width: 100% !important;
+                    background-color: var(--discord-darkest);
+                }
+
+                .server-list {
+                    padding: 20px 0;
+                    width: 100%;
+                    overflow-y: auto;
+                }
+
+                /* Увеличиваем размер иконок серверов */
+                .server-icon {
+                    width: 60px;
+                    height: 60px;
+                    margin-bottom: 15px;
+                    font-size: 24px;
+                }
+
+                /* Добавляем анимацию при открытии */
+                .server-column {
+                    transition: transform 0.3s ease;
+                    transform: translateX(-100%);
+                }
+
+                .server-column.active {
+                    transform: translateX(0);
+                }
+
+                /* Заголовок для мобильных */
+                .mobile-server-title {
+                    color: var(--discord-light);
+                    font-size: 1.2rem;
+                    text-align: center;
+                    width: 100%;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+
+                /* Улучшаем отступы */
+                .server-list {
+                    padding: 15px 0;
+                }
+
+                /* Увеличиваем область нажатия */
+                .server-icon {
+                    padding: 10px;
+                }
+
+                .loading-indicator {
+                    margin-bottom: 80px;
+                }
+                #toggle-channels {
+                    display: none !important;
+                }
+                .sidebar {
+                    position: fixed;
+                    left: -100%;
+                    top: 0;
+                    width: 220px !important;
+                    z-index: 1000;
+                }
+
+                .server-column {
+                    position: fixed;
+                    left: -100%;
+                    top: 0;
+                    z-index: 1000;
+                }
+
+                .mobile-nav {
+                    display: flex;
+                    justify-content: space-around;
+                }
+
+                .chat-area {
+                    padding-bottom: 60px; /* Чтобы сообщения не перекрывались панелью навигации */
+                }
+
+                .chat-input-area {
+                    padding: 10px;
+                    position: fixed;
+                    bottom: 60px; /* Высота mobile-nav + отступ */
+                    left: 0;
+                    right: 0;
+                    background-color: var(--discord-darkest);
+                    z-index: 101; /* Выше, чем mobile-nav */
+                }
+
+                .chat-input {
+                    padding: 8px;
+                }
+
+                .send-button {
+                    width: 36px;
+                    height: 36px;
+                }
+
+                .message-avatar {
+                    width: 32px;
+                    height: 32px;
+                    margin-right: 10px;
+                }
+
+                .message-text {
+                    font-size: 0.9rem;
+                    overflow-wrap: anywhere !important;
+                }
+
+                .message-content {
+                    max-width: 85vw;
+                }
+
+                .message-content pre {
+                    white-space: pre-wrap !important;
+                }
+
+                .message-content code.hljs {
+                    white-space: pre-wrap !important;
+                    font-size: 11px;
+                    text-align: left;
+                }
+
+                .sidebar.active {
+                    left: 0;
+                }
+
+                .server-column.active {
+                    left: 0;
+                }
+
+                .overlay {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    z-index: 999;
+                }
+
+                .overlay.active {
+                    display: block;
+                }
+
+                /* Увеличение области нажатия для мобильных устройств */
+                .channel-item,
+                .server-icon {
+                    padding: 8px;
+                    margin-bottom: 5px;
+                }
+
+                /* Улучшение видимости текста в каналах */
+                .channel-item {
+                    font-size: 1rem;
+                }
+
+                /* Улучшение читаемости заголовков */
+                .chat-header {
+                    font-size: 1.1rem;
+                }
+            }
+            /* Стили для кнопки закрытия */
+            #close-server-list {
+                opacity: 0.7;
+                transition: all 0.2s ease;
+                z-index: 1001;
+            }
+
+            #close-server-list:hover {
+                opacity: 1;
+                transform: rotate(90deg);
+                color: var(--discord-red) !important;
+            }
+
+            /* Адаптация для маленьких экранов */
+            @media (max-width: 400px) {
+                .mobile-server-title {
+                    padding: 12px !important;
+                }
+
+                #close-server-list {
+                    right: 8px !important;
+                    font-size: 1.2rem;
+                }
+            }
+
+            /* Скрываем на десктопной версии */
+            @media (min-width: 769px) {
+                #close-server-list {
+                    display: none !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid h-100 p-0">
+            <div class="row g-0 h-100">
+                <!-- Server Icons Column -->
+                <div class="col-auto server-column" id="server-column">
+                    <div class="server-list">
+                        <!-- Мобильный заголовок с кнопкой закрытия -->
+                        <div
+                            class="mobile-server-title d-md-none p-3 position-relative"
+                        >
+                            Выберите ИИ:
+                            <button
+                                id="close-server-list"
+                                class="btn btn-link text-white position-absolute end-0 top-50 translate-middle-y me-3"
+                            >
+                                <i class="bi bi-x-lg fs-4"></i>
+                            </button>
+                        </div>
+                        <!-- Основной чат (GigaChat) -->
+                        <div
+                            class="server-icon active"
+                            data-model="gigachat"
+                            id="giga-server-icon"
+                            onclick="window.location.href='/'"
+                        >
+                            <svg
+                                version="1.0"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="300.000000pt"
+                                height="152.000000pt"
+                                viewBox="0 0 300.000000 152.000000"
+                                preserveAspectRatio="xMidYMid meet"
+                            >
+                                <g
+                                    transform="translate(0.000000,152.000000) scale(0.100000,-0.100000)"
+                                    fill="#ffffff"
+                                    stroke="none"
+                                >
+                                    <path
+                                        d="M433 1116 c-121 -30 -179 -104 -171 -221 5 -85 38 -134 115 -171 50 -25 72 -29 163 -32 105 -4 117 -2 222 42 11 5 18 1 23 -13 6 -18 14 -21 71 -21 l65 0 -3 118 -3 117 -162 3 -163 2 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -35 -155 -44 -207 -13 -56 35 -56 127 0 162 46 29 160 23 201 -9 25 -19 41 -22 117 -22 48 0 90 4 94 10 10 17 -22 77 -57 103 -19 15 -63 33 -98 41 -78 19 -254 19 -327 2z"
+                                    />
+                                    <path
+                                        d="M1541 1115 c-123 -35 -166 -88 -166 -206 0 -99 27 -144 112 -186 54 -26 66 -28 183 -28 112 0 130 2 169 23 35 19 45 21 52 10 5 -7 9 -16 9 -20 0 -5 29 -8 65 -8 l65 0 0 120 0 120 -165 0 -165 0 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -31 -148 -44 -199 -17 -65 33 -66 135 -1 168 50 26 155 20 194 -11 25 -19 41 -22 117 -22 48 0 90 4 94 10 9 14 -19 72 -46 97 -45 41 -105 55 -249 59 -100 3 -149 0 -189 -11z"
+                                    />
+                                    <path
+                                        d="M950 1060 l0 -60 50 0 50 0 0 -90 0 -90 -50 0 -50 0 0 -60 0 -60 195 0 195 0 0 59 0 60 -47 3 -48 3 0 85 0 85 48 3 47 3 0 60 0 59 -195 0 -195 0 0 -60z"
+                                    />
+                                    <path
+                                        d="M2215 1058 c-16 -35 -59 -126 -97 -203 -37 -77 -68 -143 -68 -147 0 -5 43 -8 95 -8 92 0 96 1 107 25 11 25 13 25 128 25 115 0 117 0 128 -25 11 -24 14 -25 117 -25 58 0 105 2 105 5 0 3 -48 97 -106 210 l-106 205 -137 0 -137 0 -29 -62z m194 -117 c11 -27 21 -54 21 -60 0 -7 -23 -11 -55 -11 -30 0 -55 2 -55 4 0 13 53 116 60 116 4 0 17 -22 29 -49z"
+                                    />
+                                    <path
+                                        d="M495 659 c-165 -16 -244 -87 -245 -218 0 -148 108 -221 327 -221 50 0 116 5 145 11 103 21 178 85 178 152 l0 27 -94 0 c-92 0 -95 -1 -126 -31 -30 -30 -33 -31 -106 -27 -69 3 -79 6 -100 31 -32 37 -32 90 -1 121 46 45 169 45 214 0 22 -22 32 -24 118 -24 89 0 95 1 95 21 0 27 -16 57 -48 92 -49 52 -205 81 -357 66z"
+                                    />
+                                    <path
+                                        d="M937 654 c-4 -4 -7 -101 -7 -216 l0 -208 100 0 100 0 0 75 0 75 120 0 119 0 3 -72 3 -73 98 -3 97 -3 -2 213 -3 213 -95 0 -95 0 -3 -72 -3 -73 -119 0 -119 0 -3 73 -3 72 -90 3 c-50 1 -94 0 -98 -4z"
+                                    />
+                                    <path
+                                        d="M1754 588 c-20 -40 -67 -137 -105 -215 l-68 -143 97 0 97 0 17 30 17 30 110 0 110 0 16 -30 16 -30 105 0 c58 0 104 4 102 8 -13 31 -203 400 -211 410 -7 8 -47 12 -138 12 l-129 0 -36 -72z m191 -114 c14 -31 25 -60 25 -65 0 -5 -25 -9 -55 -9 -30 0 -55 4 -55 10 0 10 52 120 57 120 2 0 14 -25 28 -56z"
+                                    />
+                                    <path
+                                        d="M2154 646 c-3 -7 -4 -38 -2 -67 l3 -54 93 -3 92 -3 0 -144 0 -145 95 0 94 0 3 143 3 142 93 3 93 3 -3 67 -3 67 -278 3 c-229 2 -278 0 -283 -12z"
+                                    />
+                                </g>
+                            </svg>
+                        </div>
+                        <!-- Альтернативная модель (Grok) -->
+                        <div
+                            class="server-icon"
+                            data-model="grok"
+                            id="grok-server-icon"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                viewBox="0,0,256,256"
+                                width="48px"
+                                height="48px"
+                                fill-rule="nonzero"
+                            >
+                                <g
+                                    fill="#ffffff"
+                                    fill-rule="nonzero"
+                                    stroke="none"
+                                    stroke-width="1"
+                                    stroke-linecap="butt"
+                                    stroke-linejoin="miter"
+                                    stroke-miterlimit="10"
+                                    stroke-dasharray=""
+                                    stroke-dashoffset="0"
+                                    font-family="none"
+                                    font-weight="none"
+                                    font-size="none"
+                                    text-anchor="none"
+                                    style="mix-blend-mode: normal"
+                                >
+                                    <g transform="scale(5.33333,5.33333)">
+                                        <path
+                                            d="M18.542,30.532l15.956,-11.776c0.783,-0.576 1.902,-0.354 2.274,0.545c1.962,4.728 1.084,10.411 -2.819,14.315c-3.903,3.901 -9.333,4.756 -14.299,2.808l-5.423,2.511c7.778,5.315 17.224,4 23.125,-1.903c4.682,-4.679 6.131,-11.058 4.775,-16.812l0.011,0.011c-1.966,-8.452 0.482,-11.829 5.501,-18.735c0.116,-0.164 0.237,-0.33 0.357,-0.496l-6.602,6.599v-0.022l-22.86,22.958M15.248,33.392c-5.582,-5.329 -4.619,-13.579 0.142,-18.339c3.521,-3.522 9.294,-4.958 14.331,-2.847l5.412,-2.497c-0.974,-0.704 -2.224,-1.46 -3.659,-1.994c-6.478,-2.666 -14.238,-1.34 -19.505,3.922c-5.065,5.064 -6.659,12.851 -3.924,19.496c2.044,4.965 -1.307,8.48 -4.682,12.023c-1.199,1.255 -2.396,2.514 -3.363,3.844l15.241,-13.608"
+                                        ></path>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Channels Column -->
+                <div class="col-auto sidebar" id="sidebar" style="width: 220px">
+                    <div class="channel-list">
+                        <div class="p-3 fw-bold fs-5" id="ai-model-title">
+                            GigaChat AI
+                        </div>
+                        <div class="channel-category" id="chat-category">
+                            <div>
+                                <i
+                                    class="fa-solid fa-chevron-down me-1 chevron-icon"
+                                    id="category-chevron"
+                                ></i>
+                                ЧАТЫ
+                            </div>
+                            <div
+                                class="add-chat-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#newChatModal"
+                            >
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                        </div>
+
+                        <div class="channels-container" id="channels-container">
+                            <div
+                                class="channel-item active"
+                                data-chat-id="general"
+                            >
+                                <i class="fa-solid fa-hashtag channel-icon"></i>
+                                общий-чат
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Area Column -->
+                <div class="col">
+                    <div class="chat-area">
+                        <div class="chat-header">
+                            <button
+                                class="btn btn-link text-decoration-none d-md-none me-2"
+                                id="toggle-sidebar"
+                            >
+                                <i
+                                    class="fa-solid fa-bars"
+                                    style="color: var(--discord-light)"
+                                ></i>
+                            </button>
+                            <i class="fa-solid fa-hashtag me-2"></i>
+                            <span class="fw-bold" id="current-chat-name"
+                                >общий-чат</span
+                            >
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message assistant-message">
+                                <div class="message-avatar">G</div>
+                                <div class="message-content">
+                                    <div class="message-author">GigaChat</div>
+                                    <div class="message-text">
+                                        Привет! Я GigaChat. Чем могу помочь?
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="loading-indicator" id="loading-indicator">
+                            <div class="spinner"></div>
+                            <div>AI печатает...</div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <input
+                                type="text"
+                                class="chat-input"
+                                id="message-input"
+                                placeholder="Напишите сообщение..."
+                                autocomplete="on"
+                            />
+                            <div class="send-button" id="send-button">
+                                <i class="bi bi-arrow-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay for mobile navigation -->
+        <div class="overlay" id="overlay"></div>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav">
+            <button class="nav-btn" id="show-servers">
+                <i class="fa-solid fa-server"></i>
+            </button>
+            <button class="nav-btn" id="show-channels">
+                <i class="fa-solid fa-hashtag"></i>
+            </button>
+            <button class="nav-btn active" id="show-chat">
+                <i class="fa-solid fa-comment"></i>
+            </button>
+        </div>
+
+        <!-- Modal for creating new chat -->
+        <div
+            class="modal fade"
+            id="newChatModal"
+            tabindex="-1"
+            aria-labelledby="newChatModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div
+                    class="modal-content bg-dark text-light border border-secondary"
+                >
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title" id="newChatModalLabel">
+                            Создать новый чат
+                        </h5>
+                        <button
+                            type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="chat-name" class="form-label"
+                                >Название чата</label
+                            >
+                            <input
+                                type="text"
+                                class="form-control bg-dark text-light border-secondary"
+                                id="chat-name"
+                                placeholder="Введите название чата"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-secondary">
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            data-bs-dismiss="modal"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="create-chat-btn"
+                        >
+                            Создать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for confirming chat deletion -->
+        <div
+            class="modal fade"
+            id="deleteChatModal"
+            tabindex="-1"
+            aria-labelledby="deleteChatModalLabel"
+            aria-hidden="true"
+            data-bs-theme="dark"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteChatModalLabel">
+                            Удалить чат
+                        </h5>
+                        <button
+                            type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Вы уверены, что хотите удалить чат "<span
+                                id="delete-chat-name"
+                            ></span
+                            >"?
+                        </p>
+                        <p>
+                            Это действие нельзя отменить, и вся история
+                            сообщений будет потеряна.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            id="confirm-delete-btn"
+                        >
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            const titleElement = document.getElementById("ai-model-title");
+            const path = window.location.pathname;
+            if (path === "/") {
+                titleElement.textContent = "GigaChat";
+            } else if (path === "/grok") {
+                titleElement.textContent = "Grok";
+            }
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+        <!-- Подсветка синтаксиса -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // =========== Mobile Navigation Elements ===========
+                const sidebar = document.getElementById("sidebar");
+                const serverColumn = document.getElementById("server-column");
+                const overlay = document.getElementById("overlay");
+                const toggleSidebar = document.getElementById("toggle-sidebar");
+                const showServers = document.getElementById("show-servers");
+                const showChannels = document.getElementById("show-channels");
+                const showChat = document.getElementById("show-chat");
+
+                // =========== Chat Elements ===========
+                const chatMessages = document.getElementById("chat-messages");
+                const messageInput = document.getElementById("message-input");
+                const sendButton = document.getElementById("send-button");
+                const loadingIndicator =
+                    document.getElementById("loading-indicator");
+                const currentChatName =
+                    document.getElementById("current-chat-name");
+                const createChatBtn =
+                    document.getElementById("create-chat-btn");
+                const confirmDeleteBtn =
+                    document.getElementById("confirm-delete-btn");
+                const channelList = document.querySelector(".channel-list");
+                const newChatModal = new bootstrap.Modal(
+                    document.getElementById("newChatModal"),
+                );
+                const deleteChatModal = new bootstrap.Modal(
+                    document.getElementById("deleteChatModal"),
+                );
+                const chatCategory = document.getElementById("chat-category");
+                const categoryChevron =
+                    document.getElementById("category-chevron");
+                const channelsContainer =
+                    document.getElementById("channels-container");
+
+                // =========== Mobile Navigation Functions ===========
+                // Функция для закрытия всех панелей
+                document
+                    .getElementById("close-server-list")
+                    .addEventListener("click", function () {
+                        const serverColumn =
+                            document.getElementById("server-column");
+                        serverColumn.classList.remove("active");
+                        document
+                            .getElementById("overlay")
+                            .classList.remove("active");
+                    });
+
+                // Закрытие при клике вне панели
+                document
+                    .getElementById("overlay")
+                    .addEventListener("click", function () {
+                        document
+                            .getElementById("server-column")
+                            .classList.remove("active");
+                        this.classList.remove("active");
+                    });
+                function closeAllPanels() {
+                    sidebar.classList.remove("active");
+                    serverColumn.classList.remove("active");
+                    overlay.classList.remove("active");
+
+                    showServers.classList.remove("active");
+                    showChannels.classList.remove("active");
+                    showChat.classList.add("active");
+                }
+
+                // Обработчик для кнопки-гамбургера
+                if (toggleSidebar) {
+                    toggleSidebar.addEventListener("click", function () {
+                        sidebar.classList.toggle("active");
+                        overlay.classList.toggle("active");
+                    });
+                }
+
+                // Обработчик для кнопки "Серверы"
+                if (showServers) {
+                    showServers.addEventListener("click", function () {
+                        serverColumn.classList.add("active");
+                        sidebar.classList.remove("active");
+                        overlay.classList.add("active");
+
+                        showServers.classList.add("active");
+                        showChannels.classList.remove("active");
+                        showChat.classList.remove("active");
+                    });
+                }
+
+                // Обработчик для кнопки "Каналы"
+                if (showChannels) {
+                    showChannels.addEventListener("click", function () {
+                        sidebar.classList.add("active");
+                        serverColumn.classList.remove("active");
+                        overlay.classList.add("active");
+
+                        showServers.classList.remove("active");
+                        showChannels.classList.add("active");
+                        showChat.classList.remove("active");
+                    });
+                }
+
+                // Обработчик для кнопки "Чат"
+                if (showChat) {
+                    showChat.addEventListener("click", function () {
+                        closeAllPanels();
+                    });
+                }
+
+                // Закрытие панелей при клике на оверлей
+                if (overlay) {
+                    overlay.addEventListener("click", closeAllPanels);
+                }
+
+                // Автоматическая адаптация при изменении размера окна
+                window.addEventListener("resize", function () {
+                    if (window.innerWidth > 768) {
+                        closeAllPanels();
+                    }
+                });
+
+                // =========== Хранилище для истории чатов ===========
+                let chatHistory = {
+                    general: [],
+                };
+
+                // Текущий активный чат
+                let currentChatId = "general";
+
+                // Определяем текущий режим (Grok или GigaChat)
+                const isGrokMode = window.location.pathname === "/grok";
+
+                // =========== Инициализируем приветственное сообщение в зависимости от режима ===========
+                function initializeWelcomeMessage() {
+                    if (isGrokMode) {
+                        chatHistory.general = [
+                            {
+                                role: "assistant",
+                                content: "Привет! Я Grok AI. Чем могу помочь?",
+                            },
+                        ];
+
+                        // Обновляем заголовок
+                        const modelTitle =
+                            document.getElementById("ai-model-title");
+                        if (modelTitle) {
+                            modelTitle.textContent = "Grok AI";
+                        }
+                    } else {
+                        chatHistory.general = [
+                            {
+                                role: "assistant",
+                                content:
+                                    "Привет! Я GigaChat. Чем могу помочь? Мы на платформе Зуфара!",
+                            },
+                        ];
+
+                        // Обновляем заголовок для GigaChat (если нужно)
+                        const modelTitle =
+                            document.getElementById("ai-model-title");
+                        if (modelTitle) {
+                            modelTitle.textContent = "GigaChat";
+                        }
+                    }
+                }
+
+                // =========== Функция для добавления нового сообщения в чат ===========
+                function addMessage(content, role = "user") {
+                    const isUser = role === "user";
+
+                    // Добавляем сообщение в историю
+                    chatHistory[currentChatId].push({
+                        role: role,
+                        content: content, // Сохраняем оригинальный Markdown
+                    });
+
+                    // Создаем элемент сообщения
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = `message ${isUser ? "user-message" : "assistant-message"}`;
+
+                    // Проверяем существование marked и DOMPurify перед использованием
+                    let safeContent = content;
+                    if (
+                        typeof marked !== "undefined" &&
+                        typeof DOMPurify !== "undefined"
+                    ) {
+                        // Рендерим Markdown и санитайзим HTML
+                        const renderedContent = marked.parse(content);
+                        safeContent = DOMPurify.sanitize(renderedContent);
+                    }
+
+                    // Определяем аватар и имя в зависимости от режима
+                    const avatarLetter = isUser ? "U" : isGrokMode ? "G" : "G";
+                    const authorName = isUser
+                        ? "Пользователь"
+                        : isGrokMode
+                          ? "Grok"
+                          : "GigaChat";
+
+                    messageDiv.innerHTML = `
+                <div class="message-avatar">${avatarLetter}</div>
+                <div class="message-content">
+                    <div class="message-author">${authorName}</div>
+                    <div class="message-text">${safeContent}</div>
+                    ${!isUser ? '<div class="message-actions"><button class="copy-btn"><i class="bi bi-copy"></i></button></div>' : ""}
+                </div>
+            `;
+
+                    // Добавляем обработчик копирования
+                    if (!isUser) {
+                        const copyBtn = messageDiv.querySelector(".copy-btn");
+                        copyBtn.addEventListener("click", () => {
+                            navigator.clipboard.writeText(content);
+                            showToast("Сообщение скопировано!");
+                        });
+                    }
+
+                    // Анимация появления
+                    messageDiv.style.opacity = 0;
+                    chatMessages.appendChild(messageDiv);
+                    setTimeout(() => (messageDiv.style.opacity = 1), 50);
+
+                    // Прокрутка и обновление хранилища
+                    chatMessages.scrollTo({
+                        top: chatMessages.scrollHeight,
+                        behavior: "smooth",
+                    });
+                    saveChatsToLocalStorage();
+
+                    // Подсветка кода
+                    setTimeout(() => {
+                        if (typeof hljs !== "undefined") {
+                            messageDiv
+                                .querySelectorAll("pre code")
+                                .forEach((block) => {
+                                    hljs.highlightElement(block);
+                                });
+                        }
+                    }, 100);
+                }
+
+                // =========== Категории и каналы ===========
+                if (chatCategory) {
+                    chatCategory.addEventListener("click", function (e) {
+                        if (
+                            !e.target.classList.contains("add-chat-btn") &&
+                            !e.target.classList.contains("fa-plus")
+                        ) {
+                            channelsContainer.classList.toggle("collapsed");
+                            categoryChevron.classList.toggle("collapsed");
+                        }
+                    });
+                }
+
+                // Обработка создания нового чата
+                const chatNameInput = document.getElementById("chat-name");
+
+                if (createChatBtn && chatNameInput) {
+                    createChatBtn.addEventListener("click", function () {
+                        const chatName = chatNameInput.value.trim();
+                        if (chatName) {
+                            createNewChat(chatName);
+                            chatNameInput.value = "";
+
+                            if (
+                                typeof newChatModal !== "undefined" &&
+                                newChatModal.hide
+                            ) {
+                                newChatModal.hide();
+                            }
+
+                            // Убедимся, что контейнер чатов развернут при создании нового чата
+                            categoryChevron.classList.remove("collapsed");
+                            channelsContainer.classList.remove("collapsed");
+                        }
+                    });
+                }
+
+                // =========== Функция для загрузки истории чата ===========
+                function loadChatHistory(chatId) {
+                    // Очищаем текущий чат
+                    chatMessages.innerHTML = "";
+
+                    // Загружаем историю выбранного чата
+                    const history = chatHistory[chatId] || [];
+
+                    history.forEach((message) => {
+                        const isUser = message.role === "user";
+
+                        const messageDiv = document.createElement("div");
+                        messageDiv.className = `message ${isUser ? "user-message" : "assistant-message"}`;
+
+                        // Определяем аватар и имя в зависимости от режима
+                        const avatarLetter = isUser
+                            ? "U"
+                            : isGrokMode
+                              ? "G"
+                              : "G";
+                        const authorName = isUser
+                            ? "Пользователь"
+                            : isGrokMode
+                              ? "Grok"
+                              : "GigaChat";
+
+                        messageDiv.innerHTML = `
+                    <div class="message-avatar">${avatarLetter}</div>
+                    <div class="message-content">
+                        <div class="message-author">${authorName}</div>
+                        <div class="message-text">${message.content}</div>
+                        ${!isUser ? '<div class="message-actions"><button class="copy-btn"><i class="bi bi-copy"></i></button></div>' : ""}
+                    </div>
+                `;
+
+                        // Добавляем обработчик копирования для кнопки скопировать
+                        if (!isUser) {
+                            const copyBtn =
+                                messageDiv.querySelector(".copy-btn");
+                            if (copyBtn) {
+                                copyBtn.addEventListener("click", () => {
+                                    navigator.clipboard.writeText(
+                                        message.content,
+                                    );
+                                    showToast("Сообщение скопировано!");
+                                });
+                            }
+                        }
+
+                        chatMessages.appendChild(messageDiv);
+                    });
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
+                // =========== Функция для отправки запроса к бэкенду ===========
+                async function sendMessage(content) {
+                    try {
+                        loadingIndicator.style.display = "flex";
+                        messageInput.disabled = true;
+
+                        // Determine which API endpoint to use based on the current mode
+                        const endpoint = isGrokMode ? "/api/grok" : "/api/chat";
+
+                        // Formulate the URL with proper parameter encoding
+                        const url = new URL(endpoint, window.location.origin);
+                        url.searchParams.append("content", content);
+
+                        const response = await fetch(url, {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        });
+
+                        // Check HTTP status
+                        if (!response.ok) {
+                            const error = await response.text();
+                            throw new Error(
+                                `HTTP error! status: ${response.status}. ${error}`,
+                            );
+                        }
+
+                        // Parse JSON response
+                        const data = await response.json();
+
+                        // Check if content exists in response
+                        if (!data?.content) {
+                            throw new Error("Invalid response format");
+                        }
+
+                        // Add message to chat
+                        addMessage(data.content, "assistant");
+                    } catch (error) {
+                        console.error("Error:", error);
+                        addMessage(
+                            `
+            ⚠️ Произошла ошибка:<br>
+            <small>${error.message}</small>
+            `,
+                            "assistant",
+                        );
+
+                        // Ask if user wants to retry
+                        if (
+                            confirm("Ошибка при отправке. Попробовать снова?")
+                        ) {
+                            await sendMessage(content);
+                        }
+                    } finally {
+                        loadingIndicator.style.display = "none";
+                        messageInput.disabled = false;
+                    }
+                }
+                // =========== Создание нового чата ===========
+                function createNewChat(chatName) {
+                    // Генерируем уникальный ID для чата
+                    const chatId = "chat-" + Date.now();
+
+                    // Получаем имя ассистента в зависимости от режима
+                    const assistantName = isGrokMode ? "Grok" : "GigaChat";
+
+                    // Инициализируем историю для нового чата
+                    chatHistory[chatId] = [
+                        {
+                            role: "assistant",
+                            content: `Новый чат "${chatName}" создан. Чем я могу вам помочь?`,
+                        },
+                    ];
+
+                    // Добавляем новый чат в список каналов
+                    const channelItem = document.createElement("div");
+                    channelItem.className = "channel-item";
+                    channelItem.setAttribute("data-chat-id", chatId);
+                    channelItem.innerHTML = `
+                <i class="fa-solid fa-hashtag channel-icon"></i> ${chatName}
+                <span class="delete-channel" data-chat-id="${chatId}" data-chat-name="${chatName}">
+                    <i class="fa-solid fa-trash-can"></i>
+                </span>
+            `;
+
+                    // Добавляем элемент в контейнер каналов
+                    channelsContainer.appendChild(channelItem);
+
+                    // Добавляем обработчик для переключения на новый канал
+                    setupChannelItemEvent(channelItem);
+
+                    // Сохраняем чаты в localStorage
+                    saveChatsToLocalStorage();
+
+                    // Переключаемся на новый чат
+                    switchChat(chatId, chatName);
+                }
+
+                // =========== Удаление чата ===========
+                function deleteChat(chatId) {
+                    // Удаляем из истории
+                    delete chatHistory[chatId];
+
+                    // Удаляем элемент из DOM
+                    const channelItem = document.querySelector(
+                        `.channel-item[data-chat-id="${chatId}"]`,
+                    );
+                    if (channelItem) {
+                        channelItem.remove();
+                    }
+
+                    // Сохраняем чаты в localStorage
+                    saveChatsToLocalStorage();
+
+                    // Если удаляем текущий чат, переключаемся на общий
+                    if (currentChatId === chatId) {
+                        switchChat("general", "общий-чат");
+                    }
+                }
+
+                // =========== Переключение между чатами ===========
+                function switchChat(chatId, chatName) {
+                    // Обновляем текущий чат
+                    currentChatId = chatId;
+                    currentChatName.textContent = chatName;
+
+                    // Обновляем активный класс
+                    document
+                        .querySelectorAll(".channel-item")
+                        .forEach((item) => {
+                            item.classList.remove("active");
+                        });
+
+                    const activeChannel = document.querySelector(
+                        `.channel-item[data-chat-id="${chatId}"]`,
+                    );
+                    if (activeChannel) {
+                        activeChannel.classList.add("active");
+                    }
+
+                    // Загружаем историю
+                    loadChatHistory(chatId);
+
+                    // На мобильных устройствах закрыть сайдбар после выбора чата
+                    if (window.innerWidth <= 768) {
+                        closeAllPanels();
+                    }
+                }
+
+                // =========== Сохранение чатов в localStorage ===========
+                function saveChatsToLocalStorage() {
+                    // Используем разные ключи в зависимости от режима
+                    const historyKey = isGrokMode
+                        ? "grok_history"
+                        : "gigachat_history";
+                    const channelsKey = isGrokMode
+                        ? "grok_channels"
+                        : "gigachat_channels";
+
+                    localStorage.setItem(
+                        historyKey,
+                        JSON.stringify(chatHistory),
+                    );
+                    localStorage.setItem(
+                        channelsKey,
+                        JSON.stringify(getChannelsInfo()),
+                    );
+                }
+
+                // =========== Загрузка чатов из localStorage ===========
+                function loadChatsFromLocalStorage() {
+                    // Используем разные ключи в зависимости от режима
+                    const historyKey = isGrokMode
+                        ? "grok_history"
+                        : "gigachat_history";
+                    const channelsKey = isGrokMode
+                        ? "grok_channels"
+                        : "gigachat_channels";
+
+                    const savedHistory = localStorage.getItem(historyKey);
+                    const savedChannels = localStorage.getItem(channelsKey);
+
+                    // Если в localStorage есть данные, загружаем их
+                    if (savedHistory) {
+                        chatHistory = JSON.parse(savedHistory);
+                    } else {
+                        // Иначе инициализируем дефолтное состояние
+                        initializeWelcomeMessage();
+                    }
+
+                    // Если есть сохраненные каналы, создаем их в DOM
+                    if (savedChannels) {
+                        const channels = JSON.parse(savedChannels);
+
+                        // Очищаем контейнер каналов перед добавлением новых
+                        // Сохраняем только элементы общего канала, если он есть
+                        const generalChannel = Array.from(
+                            channelsContainer.children,
+                        ).filter(
+                            (el) =>
+                                el.getAttribute("data-chat-id") === "general",
+                        );
+
+                        channelsContainer.innerHTML = "";
+
+                        // Возвращаем элемент общего канала, если он был
+                        if (generalChannel.length > 0) {
+                            generalChannel.forEach((el) =>
+                                channelsContainer.appendChild(el),
+                            );
+                        }
+
+                        // Добавляем все остальные каналы
+                        channels.forEach((channel) => {
+                            if (channel.id !== "general") {
+                                const channelItem =
+                                    document.createElement("div");
+                                channelItem.className = "channel-item";
+                                channelItem.setAttribute(
+                                    "data-chat-id",
+                                    channel.id,
+                                );
+                                channelItem.innerHTML = `
+                            <i class="fa-solid fa-hashtag channel-icon"></i> ${channel.name}
+                            <span class="delete-channel" data-chat-id="${channel.id}" data-chat-name="${channel.name}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </span>
+                        `;
+
+                                channelsContainer.appendChild(channelItem);
+
+                                // Добавляем обработчик для канала
+                                setupChannelItemEvent(channelItem);
+                            }
+                        });
+                    } else {
+                        // Если нет сохраненных каналов, инициализируем дефолтное состояние
+                        initializeWelcomeMessage();
+                    }
+
+                    // Загружаем историю текущего чата
+                    loadChatHistory(currentChatId);
+                }
+
+                // =========== Обработчик перехода между Grok и GigaChat ===========
+                const grokServerIcon =
+                    document.getElementById("grok-server-icon");
+                const gigaChatServerIcon = document.getElementById(
+                    "gigachat-server-icon",
+                );
+
+                if (grokServerIcon) {
+                    grokServerIcon.addEventListener("click", function () {
+                        window.location.href = "/grok";
+                    });
+                }
+
+                if (gigaChatServerIcon) {
+                    gigaChatServerIcon.addEventListener("click", function () {
+                        window.location.href = "/";
+                    });
+                }
+
+                // =========== Получение информации о каналах ===========
+                function getChannelsInfo() {
+                    const channels = [];
+
+                    document
+                        .querySelectorAll(".channel-item")
+                        .forEach((item) => {
+                            const id = item.getAttribute("data-chat-id");
+                            // Извлекаем текст до элемента с классом delete-channel
+                            let name = "";
+                            for (let node of item.childNodes) {
+                                if (node.nodeType === 3) {
+                                    // Текстовый узел
+                                    name += node.textContent.trim();
+                                } else if (
+                                    node.nodeType === 1 &&
+                                    !node.classList.contains("delete-channel")
+                                ) {
+                                    // Элемент
+                                    if (node.tagName.toLowerCase() === "i")
+                                        continue; // Пропускаем иконку
+                                    name += node.textContent.trim();
+                                } else if (
+                                    node.classList &&
+                                    node.classList.contains("delete-channel")
+                                ) {
+                                    break; // Останавливаемся, когда достигли кнопки удаления
+                                }
+                            }
+
+                            channels.push({
+                                id: id,
+                                name: name.trim(),
+                            });
+                        });
+
+                    return channels;
+                }
+
+                // =========== Функция настройки обработчика событий для канала ===========
+                function setupChannelItemEvent(channelItem) {
+                    channelItem.addEventListener("click", function (e) {
+                        // Игнорируем клик по кнопке удаления
+                        if (e.target.closest(".delete-channel")) return;
+
+                        document
+                            .querySelectorAll(".channel-item")
+                            .forEach((item) => {
+                                item.classList.remove("active");
+                            });
+                        channelItem.classList.add("active");
+
+                        // Обновление заголовка чата
+                        const chatId = channelItem.getAttribute("data-chat-id");
+
+                        // Получаем имя чата из текста канала (без иконки и кнопки удаления)
+                        let chatName = "";
+                        for (let node of channelItem.childNodes) {
+                            if (node.nodeType === 3) {
+                                // Текстовый узел
+                                chatName += node.textContent.trim();
+                            } else if (
+                                node.nodeType === 1 &&
+                                !node.classList.contains("delete-channel")
+                            ) {
+                                // Элемент
+                                if (node.tagName.toLowerCase() === "i")
+                                    continue; // Пропускаем иконку
+                                chatName += node.textContent.trim();
+                            }
+                        }
+
+                        // Переключаемся на выбранный чат
+                        switchChat(chatId, chatName.trim());
+                    });
+                }
+
+                // =========== Функция отображения всплывающего уведомления ===========
+                function showToast(message) {
+                    // Проверяем, существует ли уже контейнер для тостов
+                    let toastContainer =
+                        document.getElementById("toast-container");
+                    if (!toastContainer) {
+                        toastContainer = document.createElement("div");
+                        toastContainer.id = "toast-container";
+                        toastContainer.style.cssText =
+                            "position: fixed; bottom: 20px; right: 20px; z-index: 9999;";
+                        document.body.appendChild(toastContainer);
+                    }
+
+                    // Создаем новый тост
+                    const toast = document.createElement("div");
+                    toast.className = "toast";
+                    toast.style.cssText =
+                        "background-color: #333; color: #fff; padding: 10px 20px; border-radius: 4px; margin-top: 10px; opacity: 0; transition: opacity 0.3s;";
+                    toast.textContent = message;
+
+                    // Добавляем тост в контейнер
+                    toastContainer.appendChild(toast);
+
+                    // Отображаем тост
+                    setTimeout(() => {
+                        toast.style.opacity = "1";
+                    }, 10);
+
+                    // Скрываем и удаляем тост через 3 секунды
+                    setTimeout(() => {
+                        toast.style.opacity = "0";
+                        setTimeout(() => {
+                            toastContainer.removeChild(toast);
+                        }, 300);
+                    }, 3000);
+                }
+
+                // =========== Функция отправки сообщения ===========
+                function handleSendMessage() {
+                    const content = messageInput.value.trim();
+                    if (content) {
+                        // Добавляем сообщение пользователя в чат
+                        addMessage(content, "user");
+
+                        // Отправляем запрос к бэкенду
+                        sendMessage(content);
+
+                        // Очищаем поле ввода
+                        messageInput.value = "";
+                    }
+                }
+
+                // =========== Обработчики событий ===========
+
+                // Отправка сообщения при нажатии Enter
+                if (messageInput) {
+                    messageInput.addEventListener("keypress", function (event) {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            handleSendMessage();
+                        }
+                    });
+                }
+
+                // Отправка сообщения при клике на кнопку
+                if (sendButton) {
+                    sendButton.addEventListener("click", function () {
+                        handleSendMessage();
+                    });
+                }
+
+                // Обработчик для переключения между чатами
+                if (channelList) {
+                    channelList.addEventListener("click", function (event) {
+                        // Проверяем, был ли клик по элементу канала
+                        let channelItem = event.target.closest(".channel-item");
+                        if (channelItem) {
+                            const deleteBtn =
+                                event.target.closest(".delete-channel");
+
+                            // Если клик был не по кнопке удаления
+                            if (!deleteBtn) {
+                                const chatId =
+                                    channelItem.getAttribute("data-chat-id");
+
+                                // Получаем имя чата из текста канала (без иконки и кнопки удаления)
+                                let chatName = "";
+                                for (let node of channelItem.childNodes) {
+                                    if (node.nodeType === 3) {
+                                        // Текстовый узел
+                                        chatName += node.textContent.trim();
+                                    } else if (
+                                        node.nodeType === 1 &&
+                                        !node.classList.contains(
+                                            "delete-channel",
+                                        )
+                                    ) {
+                                        // Элемент
+                                        if (node.tagName.toLowerCase() === "i")
+                                            continue; // Пропускаем иконку
+                                        chatName += node.textContent.trim();
+                                    }
+                                }
+
+                                switchChat(chatId, chatName.trim());
+                            }
+                        }
+
+                        // Если клик был по кнопке удаления
+                        if (event.target.closest(".delete-channel")) {
+                            const deleteBtn =
+                                event.target.closest(".delete-channel");
+                            const chatId =
+                                deleteBtn.getAttribute("data-chat-id");
+                            const chatName =
+                                deleteBtn.getAttribute("data-chat-name");
+
+                            // Показываем модальное окно для подтверждения
+                            document.getElementById(
+                                "delete-chat-name",
+                            ).textContent = chatName;
+                            document
+                                .getElementById("confirm-delete-btn")
+                                .setAttribute("data-chat-id", chatId);
+                            deleteChatModal.show();
+
+                            // Предотвращаем всплытие события для предотвращения переключения на канал
+                            event.stopPropagation();
+                        }
+                    });
+                }
+
+                // Подтверждение удаления чата
+                if (confirmDeleteBtn) {
+                    confirmDeleteBtn.addEventListener("click", function () {
+                        const chatId = this.getAttribute("data-chat-id");
+                        deleteChat(chatId);
+                        deleteChatModal.hide();
+                    });
+                }
+
+                // =========== Мобильный тогглер для сайдбара ===========
+                const mobileToggle = document.getElementById("toggle-channels");
+                const toggleIcon = document.getElementById("toggle-icon");
+
+                if (mobileToggle && sidebar) {
+                    mobileToggle.addEventListener("click", function () {
+                        sidebar.style.display =
+                            sidebar.style.display === "none" ? "block" : "none";
+                        if (toggleIcon) {
+                            toggleIcon.classList.toggle(
+                                "bi-arrows-collapse-vertical",
+                            );
+                            toggleIcon.classList.toggle(
+                                "bi-arrows-expand-vertical",
+                            );
+                        }
+                    });
+                }
+
+                // =========== Подсветка кода при загрузке ===========
+                if (typeof hljs !== "undefined") {
+                    hljs.highlightAll();
+                }
+
+                // =========== Загружаем чаты при инициализации ===========
+                loadChatsFromLocalStorage();
+
+                // Устанавливаем обработчики для существующих каналов
+                document
+                    .querySelectorAll(".channel-item")
+                    .forEach(setupChannelItemEvent);
+            });
+
+            // Автоматическая подсветка при загрузке и после динамического контента
+        </script>
+        <script>
+            // Автоматическая подсветка при загрузке и после динамического контента
+            document.addEventListener("DOMContentLoaded", function () {
+                hljs.highlightAll();
+
+                // Для динамически добавленного контента
+                const observer = new MutationObserver((mutations) => {
+                    hljs.highlightAll();
+                });
+            });
+        </script>
+    </body>
+</html>
