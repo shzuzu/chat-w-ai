@@ -94,11 +94,12 @@ body {
 }
 
 .channel-item {
+    border: 1px solid var(--border-color, #ccc);
     display: flex;
     align-items: center;
     padding: 6px 8px;
     border-radius: 10px;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
     cursor: pointer;
     color: var(--discord-lighter);
     position: relative;
@@ -608,7 +609,7 @@ body {
     }
 }
 .chat-input {
-    border: 1px solid var(--border-color, #ccc); /* Fallback к #ccc, если переменная не задана */
+    border: 1px solid var(--border-color, #ccc);
     background-color: #40444b;
     border-radius: 16px !important;
     color: white;
