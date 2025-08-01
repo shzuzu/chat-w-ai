@@ -4,13 +4,15 @@
     --discord-darkest: #202225;
     --discord-light: #dcddde;
     --discord-lighter: #b9bbbe;
-    --discord-accent: #5865f2;
+    --discord-accent: #6366f1;
     --discord-green: #3ba55c;
     --discord-red: #ed4245;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --success: #10b981;
 }
 
 body {
-    background-color: var(--discord-dark);
+    background-color: var(--discord-darker);
     color: var(--discord-light);
     height: 100vh;
     overflow: hidden;
@@ -50,16 +52,18 @@ body {
 }
 
 .server-icon:hover {
-    border-radius: 30%;
+    border-radius: 16px;
     background-color: var(--discord-accent);
 }
 
 .server-icon.active {
-    border-radius: 30%;
+    border-radius: 16px;
     background-color: var(--discord-accent);
 }
 
 .channel-list {
+    background-color: var(--discord-darker);
+    border: 1px solid var(--border-color, #ccc);
     padding: 0 10px;
     height: 100%;
     overflow-y: auto;
@@ -93,7 +97,7 @@ body {
     display: flex;
     align-items: center;
     padding: 6px 8px;
-    border-radius: 4px;
+    border-radius: 10px;
     margin-bottom: 2px;
     cursor: pointer;
     color: var(--discord-lighter);
@@ -169,11 +173,11 @@ body {
 }
 
 .message-avatar {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background-color: var(--discord-accent);
-    margin-right: 15px;
+    margin-right: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -190,11 +194,18 @@ body {
 
 .message-text {
     color: var(--discord-light);
+    background-color: var(--discord-dark);
     text-align: justify;
     font-family: "Montserrat", sans-serif;
     overflow-wrap: break-word;
     word-break: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
     hyphens: auto;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #ccc); /* Fallback к #ccc, если переменная не задана */
+    position: relative;
 }
 
 .message-content {
@@ -204,28 +215,15 @@ body {
 }
 
 .assistant-message .message-avatar {
-    width: 40px;
-    height: 40px;
-    background-color: #43b581;
-    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
 }
 
 .chat-input-area {
-    padding: 15px 20px;
-    background-color: var(--discord-dark);
+    padding: 5px 5px;
+    background-color: var(--discord-darker);
     display: flex;
     align-items: center;
-}
-
-.chat-input {
-    background-color: #40444b;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    padding: 12px;
-    width: 100%;
-    margin-right: 10px;
-    font-family: "Montserrat", sans-serif;
 }
 
 .chat-input:focus {
@@ -236,8 +234,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background-color: var(--discord-accent);
     color: white;
@@ -319,9 +317,9 @@ body {
 }
 
 .message-content pre {
+    border: 1px solid var(--border-color, #ccc);
     background: #2d333b;
-    padding: 1rem;
-    border-radius: 4px;
+    border-radius: 16px;
     overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -355,7 +353,7 @@ body {
     left: 0;
     right: 0;
     background-color: var(--discord-darkest);
-    padding: 10px;
+    padding: 1px;
     z-index: 100;
 }
 
@@ -492,9 +490,12 @@ body {
     }
 
     .chat-input-area {
-        padding: 10px;
+        margin-top: 50px;
+        padding-top: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
         position: fixed;
-        bottom: 60px; /* Высота mobile-nav + отступ */
+        bottom: 41px; /* Высота mobile-nav + отступ */
         left: 0;
         right: 0;
         background-color: var(--discord-darkest);
@@ -605,4 +606,14 @@ body {
     #close-server-list {
         display: none !important;
     }
+}
+.chat-input {
+    border: 1px solid var(--border-color, #ccc); /* Fallback к #ccc, если переменная не задана */
+    background-color: #40444b;
+    border-radius: 16px !important;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    margin-right: 10px;
+    font-family: "Montserrat", sans-serif;
 }
