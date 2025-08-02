@@ -203,10 +203,13 @@ body {
     -webkit-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
-    padding: 16px;
     border-radius: 12px;
     border: 1px solid var(--border-color, #ccc); /* Fallback к #ccc, если переменная не задана */
     position: relative;
+    padding-right: 16px;
+    padding-left: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
 }
 
 .message-content {
@@ -222,7 +225,7 @@ body {
 
 .chat-input-area {
     padding: 5px 5px;
-    background-color: var(--discord-darker);
+    background-color: var(--discord-darkest);
     display: flex;
     align-items: center;
 }
