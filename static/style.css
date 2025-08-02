@@ -83,16 +83,21 @@ body {
     cursor: pointer;
 }
 
+.btn {
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
 .add-chat-btn {
-    height: 36px;
+    height: 28px;
     margin-bottom: 5px;
     background: var(--discord-lighter);
     color: var(--discord-light) !important;
     border: none;
-    border-radius: 16px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
 }
 
