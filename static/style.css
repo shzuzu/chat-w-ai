@@ -84,13 +84,21 @@ body {
 }
 
 .add-chat-btn {
+    height: 36px;
+    margin-bottom: 5px;
+    background: var(--discord-lighter);
+    color: var(--discord-light) !important;
+    border: none;
+    border-radius: 16px;
     cursor: pointer;
-    color: var(--discord-lighter);
-    font-size: 16px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .add-chat-btn:hover {
-    color: var(--discord-light);
+    background: var(--discord-accent);
+    color: white;
 }
 
 .channel-item {
@@ -224,8 +232,11 @@ body {
 }
 
 .chat-input-area {
+    border-top: 1px solid var(--border-color, #ccc);
     padding: 5px 5px;
-    background-color: var(--discord-darkest);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: var(--discord-darker);
     display: flex;
     align-items: center;
 }
@@ -235,6 +246,7 @@ body {
 }
 
 .send-button {
+    border: 2px solid var(--border-color, #ccc);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -306,6 +318,23 @@ body {
 .message-content p {
     margin: 0.5rem 0;
     line-height: 1.5;
+}
+
+.new-chat-btn {
+    background: var(--accent-light);
+    color: var(--accent-primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.new-chat-btn:hover {
+    background: var(--accent-primary);
+    color: white;
 }
 
 .message-content ul,
@@ -495,7 +524,6 @@ body {
     }
 
     .chat-input-area {
-        margin-top: 50px;
         padding-top: 10px;
         padding-left: 10px;
         padding-right: 10px;
@@ -614,7 +642,7 @@ body {
 }
 .chat-input {
     font-size: 14px;
-    border: 1px solid var(--border-color, #ccc);
+    border: 2px solid var(--border-color, #ccc);
     background-color: #40444b;
     border-radius: 16px !important;
     color: white;
