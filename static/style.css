@@ -365,6 +365,7 @@ body {
     padding: 8px 12px;
     border-radius: 25%;
     margin: 0 5px;
+    margin-bottom: 4px;
 }
 
 .nav-btn.active {
@@ -496,7 +497,7 @@ body {
         padding-left: 10px;
         padding-right: 10px;
         position: fixed;
-        bottom: 41px; /* Высота mobile-nav + отступ */
+        bottom: 45px; /* Высота mobile-nav + отступ */
         left: 0;
         right: 0;
         background-color: var(--discord-darkest);
@@ -609,11 +610,11 @@ body {
     }
 }
 .chat-input {
+    font-size: 14px;
     border: 1px solid var(--border-color, #ccc);
     background-color: #40444b;
     border-radius: 16px !important;
     color: white;
-    padding: 12px;
     width: 100%;
     margin-right: 10px;
     font-family: "Montserrat", sans-serif;
