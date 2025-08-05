@@ -107,7 +107,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 var contents []string
 
 func GrokHandler(w http.ResponseWriter, r *http.Request) {
-	// Set response headers first - this is important!
 	w.Header().Set("Content-Type", "application/json")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -118,7 +117,6 @@ func GrokHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Debug log
 	fmt.Printf("Processing Grok request with content: %s\n", content)
 	var cfg APIKeys
 
@@ -137,7 +135,6 @@ func GrokHandler(w http.ResponseWriter, r *http.Request) {
 		option.WithHeader("Authorization", fmt.Sprintf("Bearer %s", cfg.GROK_API_KEY)),
 	)
 
-	// Add error handling for the API call
 	chatCompletion, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage(content),
@@ -189,7 +186,7 @@ func GigaChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Обновляем историю сообщений
+	// история сообщений
 	if len(contents) >= 4 {
 		contents = contents[1:]
 	}
@@ -246,7 +243,7 @@ func GigaChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(jsonMessage.Choices) > 0 {
-		// Экранируем HTML перед отправкой
+		// Экранируем HTML
 		rawHTML := renderMarkdown(jsonMessage.Choices[0].Message.Content)
 		safeHTML := sanitizeHTML(rawHTML)
 
