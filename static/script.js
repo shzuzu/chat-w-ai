@@ -1,763 +1,1051 @@
+/**
+ * Chat-w-AI Studio - Core Client Engine
+ * Features: Multi-model switching, Markdown/KaTeX/Code highlighting,
+ * Voice input/output, Conversation grouping & search, Theme engine, Export/Import.
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
-  // =========== Mobile Navigation Elements ===========
-  const sidebar = document.getElementById("sidebar");
-  const serverColumn = document.getElementById("server-column");
-  const overlay = document.getElementById("overlay");
-  const toggleSidebar = document.getElementById("toggle-sidebar");
-  const showServers = document.getElementById("show-servers");
-  const showChannels = document.getElementById("show-channels");
-  const showChat = document.getElementById("show-chat");
+    // ==========================================
+    // 1. Application State & Config
+    // ==========================================
+    const isGrokMode = window.location.pathname === "/grok";
+    const currentModel = isGrokMode ? "grok" : "gigachat";
+    const currentModelTitle = isGrokMode ? "Grok (xAI)" : "GigaChat";
+    const currentModelSub = isGrokMode ? "grok-3-mini" : "GigaChat-Pro";
 
-  // =========== Chat Elements ===========
-  const chatMessages = document.getElementById("chat-messages");
-  const messageInput = document.getElementById("message-input");
-  const sendButton = document.getElementById("send-button");
-  const loadingIndicator = document.getElementById("loading-indicator");
-  const currentChatName = document.getElementById("current-chat-name");
-  const createChatBtn = document.getElementById("create-chat-btn");
-  const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
-  const channelList = document.querySelector(".channel-list");
-  const newChatModal = new bootstrap.Modal(
-    document.getElementById("newChatModal"),
-  );
-  const deleteChatModal = new bootstrap.Modal(
-    document.getElementById("deleteChatModal"),
-  );
-  const chatCategory = document.getElementById("chat-category");
-  const categoryChevron = document.getElementById("category-chevron");
-  const channelsContainer = document.getElementById("channels-container");
+    let currentChatId = "general";
+    let chatHistory = {}; // { [chatId]: Array<{ role: 'user'|'assistant', content: string, time: string }> }
+    let chatMetadata = {}; // { [chatId]: { name: string, createdAt: number, pinned?: boolean } }
+    let isGenerating = false;
+    let recognition = null;
+    let isRecording = false;
 
-  // =========== Mobile Navigation Functions ===========
-  // Функция для закрытия всех панелей
-  document
-    .getElementById("close-server-list")
-    .addEventListener("click", function () {
-      const serverColumn = document.getElementById("server-column");
-      serverColumn.classList.remove("active");
-      document.getElementById("overlay").classList.remove("active");
-    });
+    // LocalStorage Keys
+    const STORAGE_KEY_HISTORY = `chat_history_${currentModel}`;
+    const STORAGE_KEY_META = `chat_meta_${currentModel}`;
+    const STORAGE_KEY_THEME = "chat_ai_theme";
+    const STORAGE_KEY_SYSTEM_PROMPT = "chat_ai_system_prompt";
 
-  // Закрытие при клике вне панели
-  document.getElementById("overlay").addEventListener("click", function () {
-    document.getElementById("server-column").classList.remove("active");
-    this.classList.remove("active");
-  });
-  function closeAllPanels() {
-    sidebar.classList.remove("active");
-    serverColumn.classList.remove("active");
-    overlay.classList.remove("active");
+    // ==========================================
+    // 2. DOM Elements Selection
+    // ==========================================
+    const serverPillar = document.getElementById("server-pillar");
+    const sidebarPanel = document.getElementById("sidebar-panel");
+    const mobileOverlay = document.getElementById("mobile-overlay");
+    const mobileToggleBtn = document.getElementById("mobile-toggle-btn");
+    const sidebarCollapseBtn = document.getElementById("sidebar-collapse-btn");
 
-    showServers.classList.remove("active");
-    showChannels.classList.remove("active");
-    showChat.classList.add("active");
-  }
+    const chatMessagesContainer = document.getElementById("chat-messages-container");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatHeroScreen = document.getElementById("chat-hero-screen");
+    const typingContainer = document.getElementById("typing-container");
+    const typingModelLabel = document.getElementById("typing-model-label");
+    const scrollBottomBtn = document.getElementById("scroll-bottom-btn");
 
-  // Обработчик для кнопки-гамбургера
-  if (toggleSidebar) {
-    toggleSidebar.addEventListener("click", function () {
-      sidebar.classList.toggle("active");
-      overlay.classList.toggle("active");
-    });
-  }
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-button");
+    const charCounter = document.getElementById("char-counter");
+    const btnVoiceInput = document.getElementById("btn-voice-input");
+    const btnClearInput = document.getElementById("btn-clear-input");
 
-  // Обработчик для кнопки "Серверы"
-  if (showServers) {
-    showServers.addEventListener("click", function () {
-      serverColumn.classList.add("active");
-      sidebar.classList.remove("active");
-      overlay.classList.add("active");
+    const currentChatNameElem = document.getElementById("current-chat-name");
+    const headerModelName = document.getElementById("header-model-name");
+    const sidebarModelTitle = document.getElementById("sidebar-model-title");
+    const channelsContainer = document.getElementById("channels-container");
+    const searchChatsInput = document.getElementById("search-chats-input");
 
-      showServers.classList.add("active");
-      showChannels.classList.remove("active");
-      showChat.classList.remove("active");
-    });
-  }
+    const btnClearChat = document.getElementById("btn-clear-chat");
+    const btnThemeQuickToggle = document.getElementById("btn-theme-quick-toggle");
+    const openSettingsBtn = document.getElementById("open-settings-btn");
 
-  // Обработчик для кнопки "Каналы"
-  if (showChannels) {
-    showChannels.addEventListener("click", function () {
-      sidebar.classList.add("active");
-      serverColumn.classList.remove("active");
-      overlay.classList.add("active");
+    // Modals
+    const newChatModalEl = document.getElementById("newChatModal");
+    const newChatModal = newChatModalEl ? new bootstrap.Modal(newChatModalEl) : null;
+    const deleteChatModalEl = document.getElementById("deleteChatModal");
+    const deleteChatModal = deleteChatModalEl ? new bootstrap.Modal(deleteChatModalEl) : null;
+    const settingsModalEl = document.getElementById("settingsModal");
+    const settingsModal = settingsModalEl ? new bootstrap.Modal(settingsModalEl) : null;
 
-      showServers.classList.remove("active");
-      showChannels.classList.add("active");
-      showChat.classList.remove("active");
-    });
-  }
+    const chatNameInput = document.getElementById("chat-name");
+    const createChatBtn = document.getElementById("create-chat-btn");
+    const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+    const deleteChatNameSpan = document.getElementById("delete-chat-name");
 
-  // Обработчик для кнопки "Чат"
-  if (showChat) {
-    showChat.addEventListener("click", function () {
-      closeAllPanels();
-    });
-  }
+    const saveSettingsBtn = document.getElementById("save-settings-btn");
+    const userSystemPromptInput = document.getElementById("user-system-prompt");
+    const themeCardOptions = document.querySelectorAll(".theme-card-option");
 
-  // Закрытие панелей при клике на оверлей
-  if (overlay) {
-    overlay.addEventListener("click", closeAllPanels);
-  }
+    const btnExportMarkdown = document.getElementById("btn-export-markdown");
+    const btnExportJson = document.getElementById("btn-export-json");
 
-  // Автоматическая адаптация при изменении размера окна
-  window.addEventListener("resize", function () {
-    if (window.innerWidth > 768) {
-      closeAllPanels();
-    }
-  });
+    // ==========================================
+    // 3. Marked & KaTeX Configuration
+    // ==========================================
+    if (typeof marked !== "undefined") {
+        const renderer = new marked.Renderer();
+        
+        // Custom code block renderer with modern header, copy button, language badge
+        renderer.code = function (code, lang) {
+            const language = lang && hljs.getLanguage(lang) ? lang : "plaintext";
+            const validLang = lang ? lang.toLowerCase() : "code";
+            const highlighted = typeof hljs !== "undefined" && lang && hljs.getLanguage(lang)
+                ? hljs.highlight(code, { language }).value
+                : (typeof hljs !== "undefined" ? hljs.highlightAuto(code).value : escapeHtml(code));
 
-  // =========== Хранилище для истории чатов ===========
-  let chatHistory = {
-    general: [],
-  };
+            return `
+            <div class="code-block-wrapper">
+                <div class="code-header">
+                    <span class="code-lang"><i class="bi bi-file-earmark-code"></i> ${validLang}</span>
+                    <div class="code-tools">
+                        <button class="code-btn copy-code-btn" type="button" title="Скопировать код">
+                            <i class="bi bi-clipboard"></i>
+                            <span>Копировать</span>
+                        </button>
+                    </div>
+                </div>
+                <pre class="code-content"><code class="hljs language-${language}">${highlighted}</code></pre>
+            </div>`;
+        };
 
-  // Текущий активный чат
-  let currentChatId = "general";
-
-  // Определяем текущий режим (Grok или GigaChat)
-  const isGrokMode = window.location.pathname === "/grok";
-
-  // =========== Инициализируем приветственное сообщение в зависимости от режима ===========
-  function initializeWelcomeMessage() {
-    if (isGrokMode) {
-      chatHistory.general = [
-        {
-          role: "assistant",
-          content: "Привет! Я Grok AI. Чем могу помочь?",
-        },
-      ];
-
-      // Обновляем заголовок
-      const modelTitle = document.getElementById("ai-model-title");
-      if (modelTitle) {
-        modelTitle.textContent = "Grok AI";
-      }
-    } else {
-      chatHistory.general = [
-        {
-          role: "assistant",
-          content:
-            "Привет! Я GigaChat. Чем могу помочь? Мы на платформе Зуфара!",
-        },
-      ];
-
-      // Обновляем заголовок для GigaChat (если нужно)
-      const modelTitle = document.getElementById("ai-model-title");
-      if (modelTitle) {
-        modelTitle.textContent = "GigaChat";
-      }
-    }
-  }
-
-  // =========== Функция для добавления нового сообщения в чат ===========
-  function addMessage(content, role = "user") {
-    const isUser = role === "user";
-
-    // Добавляем сообщение в историю
-    chatHistory[currentChatId].push({
-      role: role,
-      content: content, // Сохраняем оригинальный Markdown
-    });
-
-    // Создаем элемент сообщения
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${isUser ? "user-message" : "assistant-message"}`;
-
-    // Проверяем существование marked и DOMPurify перед использованием
-    let safeContent = content;
-    if (typeof marked !== "undefined" && typeof DOMPurify !== "undefined") {
-      // Рендерим Markdown и санитайзим HTML
-      const renderedContent = marked.parse(content);
-      safeContent = DOMPurify.sanitize(renderedContent);
-    }
-
-    // Определяем аватар и имя в зависимости от режима
-    const avatarLetter = isUser ? "U" : isGrokMode ? "G" : "G";
-    const authorName = isUser
-      ? "Пользователь"
-      : isGrokMode
-        ? "Grok"
-        : "GigaChat";
-
-    messageDiv.innerHTML = `
-        <div class="message-avatar">${avatarLetter}</div>
-        <div class="message-content">
-            <div class="message-author">${authorName}</div>
-            <div class="message-text">${safeContent}</div>
-            ${!isUser ? '<div class="message-actions"><button class="copy-btn"><i class="bi bi-copy"></i></button></div>' : ""}
-        </div>
-    `;
-
-    // Добавляем обработчик копирования
-    if (!isUser) {
-      const copyBtn = messageDiv.querySelector(".copy-btn");
-      copyBtn.addEventListener("click", () => {
-        navigator.clipboard.writeText(content);
-        showToast("Сообщение скопировано!");
-      });
-    }
-
-    // Анимация появления
-    messageDiv.style.opacity = 0;
-    chatMessages.appendChild(messageDiv);
-    setTimeout(() => (messageDiv.style.opacity = 1), 50);
-
-    // Прокрутка и обновление хранилища
-    chatMessages.scrollTo({
-      top: chatMessages.scrollHeight,
-      behavior: "smooth",
-    });
-    saveChatsToLocalStorage();
-
-    // Подсветка кода
-    setTimeout(() => {
-      if (typeof hljs !== "undefined") {
-        messageDiv.querySelectorAll("pre code").forEach((block) => {
-          hljs.highlightElement(block);
+        marked.setOptions({
+            renderer: renderer,
+            gfm: true,
+            breaks: true,
+            headerIds: false,
+            mangle: false,
         });
-      }
-    }, 100);
-  }
+    }
 
-  // =========== Категории и каналы ===========
-  if (chatCategory) {
-    chatCategory.addEventListener("click", function (e) {
-      if (
-        !e.target.classList.contains("add-chat-btn") &&
-        !e.target.classList.contains("fa-plus")
-      ) {
-        channelsContainer.classList.toggle("collapsed");
-        categoryChevron.classList.toggle("collapsed");
-      }
+    function renderMarkdownAndMath(content) {
+        if (!content) return "";
+        let parsed = content;
+        if (typeof marked !== "undefined") {
+            parsed = marked.parse(content);
+        }
+        if (typeof DOMPurify !== "undefined") {
+            parsed = DOMPurify.sanitize(parsed, {
+                ADD_ATTR: ['target'],
+                ADD_TAGS: ['iframe']
+            });
+        }
+        return parsed;
+    }
+
+    function renderMathFormulas(element) {
+        if (typeof renderMathInElement !== "undefined" && element) {
+            renderMathInElement(element, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\(", right: "\\)", display: false },
+                    { left: "\\[", right: "\\]", display: true }
+                ],
+                throwOnError: false
+            });
+        }
+    }
+
+    // ==========================================
+    // 4. Theme & Appearance Management
+    // ==========================================
+    function initTheme() {
+        const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || "slate";
+        applyTheme(savedTheme);
+
+        if (userSystemPromptInput) {
+            userSystemPromptInput.value = localStorage.getItem(STORAGE_KEY_SYSTEM_PROMPT) || "";
+        }
+    }
+
+    function applyTheme(themeName) {
+        document.documentElement.setAttribute("data-theme", themeName);
+        localStorage.setItem(STORAGE_KEY_THEME, themeName);
+
+        themeCardOptions.forEach(opt => {
+            if (opt.getAttribute("data-theme-val") === themeName) {
+                opt.classList.add("active");
+            } else {
+                opt.classList.remove("active");
+            }
+        });
+    }
+
+    themeCardOptions.forEach(card => {
+        card.addEventListener("click", () => {
+            const val = card.getAttribute("data-theme-val");
+            applyTheme(val);
+            showToast(`Установлена тема: ${card.querySelector("span").textContent}`);
+        });
     });
-  }
 
-  // Обработка создания нового чата
-  const chatNameInput = document.getElementById("chat-name");
+    if (btnThemeQuickToggle) {
+        const themes = ["slate", "oled", "light", "cyberpunk"];
+        btnThemeQuickToggle.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "slate";
+            const nextIdx = (themes.indexOf(current) + 1) % themes.length;
+            const nextTheme = themes[nextIdx];
+            applyTheme(nextTheme);
+            showToast(`Тема: ${nextTheme.toUpperCase()}`);
+        });
+    }
 
-  if (createChatBtn && chatNameInput) {
-    createChatBtn.addEventListener("click", function () {
-      const chatName = chatNameInput.value.trim();
-      if (chatName) {
-        createNewChat(chatName);
-        chatNameInput.value = "";
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener("click", () => {
+            if (userSystemPromptInput) {
+                localStorage.setItem(STORAGE_KEY_SYSTEM_PROMPT, userSystemPromptInput.value.trim());
+            }
+            showToast("Настройки успешно сохранены");
+        });
+    }
 
-        if (typeof newChatModal !== "undefined" && newChatModal.hide) {
-          newChatModal.hide();
+    if (openSettingsBtn && settingsModal) {
+        openSettingsBtn.addEventListener("click", () => {
+            settingsModal.show();
+        });
+    }
+
+    // ==========================================
+    // 5. Model Routing & Navigation
+    // ==========================================
+    function initModelHeader() {
+        if (sidebarModelTitle) sidebarModelTitle.textContent = currentModelTitle;
+        if (headerModelName) headerModelName.textContent = currentModelSub;
+
+        const gigaBtn = document.getElementById("gigachat-server-btn");
+        const grokBtn = document.getElementById("grok-server-btn");
+
+        if (isGrokMode) {
+            if (grokBtn) grokBtn.classList.add("active");
+            if (gigaBtn) gigaBtn.classList.remove("active");
+        } else {
+            if (gigaBtn) gigaBtn.classList.add("active");
+            if (grokBtn) grokBtn.classList.remove("active");
         }
 
-        // Убедимся, что контейнер чатов развернут при создании нового чата
-        categoryChevron.classList.remove("collapsed");
-        channelsContainer.classList.remove("collapsed");
-      }
+        if (gigaBtn) {
+            gigaBtn.addEventListener("click", () => {
+                if (window.location.pathname !== "/") {
+                    window.location.href = "/";
+                }
+            });
+        }
+        if (grokBtn) {
+            grokBtn.addEventListener("click", () => {
+                if (window.location.pathname !== "/grok") {
+                    window.location.href = "/grok";
+                }
+            });
+        }
+    }
+
+    // ==========================================
+    // 6. Mobile Drawer & Responsiveness
+    // ==========================================
+    function openMobileDrawer() {
+        sidebarPanel.classList.add("active");
+        mobileOverlay.classList.add("active");
+    }
+
+    function closeMobileDrawer() {
+        sidebarPanel.classList.remove("active");
+        serverPillar.classList.remove("active");
+        mobileOverlay.classList.remove("active");
+    }
+
+    if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener("click", () => {
+            if (sidebarPanel.classList.contains("active")) {
+                closeMobileDrawer();
+            } else {
+                openMobileDrawer();
+            }
+        });
+    }
+
+    if (sidebarCollapseBtn) {
+        sidebarCollapseBtn.addEventListener("click", () => {
+            closeMobileDrawer();
+        });
+    }
+
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener("click", closeMobileDrawer);
+    }
+
+    // Auto close on window resize if enlarged
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 992) {
+            closeMobileDrawer();
+        }
     });
-  }
 
-  // =========== Функция для загрузки истории чата ===========
-  function loadChatHistory(chatId) {
-    // Очищаем текущий чат
-    chatMessages.innerHTML = "";
+    // ==========================================
+    // 7. Conversation & History Engine
+    // ==========================================
+    function loadStorageData() {
+        try {
+            const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
+            const savedMeta = localStorage.getItem(STORAGE_KEY_META);
 
-    // Загружаем историю выбранного чата
-    const history = chatHistory[chatId] || [];
+            if (savedHistory) chatHistory = JSON.parse(savedHistory);
+            if (savedMeta) chatMetadata = JSON.parse(savedMeta);
+        } catch (e) {
+            console.error("Failed to parse localStorage history", e);
+        }
 
-    history.forEach((message) => {
-      const isUser = message.role === "user";
+        // Initialize general channel if empty
+        if (!chatMetadata["general"]) {
+            chatMetadata["general"] = {
+                name: "общий-чат",
+                createdAt: Date.now(),
+            };
+        }
+        if (!chatHistory["general"]) {
+            chatHistory["general"] = [
+                {
+                    role: "assistant",
+                    content: isGrokMode
+                        ? `👋 Привет! Я **Grok AI**. Чем могу помочь вам сегодня? Готов к сложным расчетам, кодингу и обсуждению любых тем!`
+                        : `👋 Привет! Я **GigaChat**. Чем могу помочь? Мы на платформе с поддержкой Markdown, формул LaTeX и кода!`,
+                    time: getCurrentTimeFormatted(),
+                }
+            ];
+        }
 
-      const messageDiv = document.createElement("div");
-      messageDiv.className = `message ${isUser ? "user-message" : "assistant-message"}`;
+        renderChannelsList();
+        switchChat(currentChatId);
+    }
 
-      // Определяем аватар и имя в зависимости от режима
-      const avatarLetter = isUser ? "U" : isGrokMode ? "G" : "G";
-      const authorName = isUser
-        ? "Пользователь"
-        : isGrokMode
-          ? "Grok"
-          : "GigaChat";
+    function saveStorageData() {
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatHistory));
+        localStorage.setItem(STORAGE_KEY_META, JSON.stringify(chatMetadata));
+    }
 
-      messageDiv.innerHTML = `
-            <div class="message-avatar">${avatarLetter}</div>
-            <div class="message-content">
-                <div class="message-author">${authorName}</div>
-                <div class="message-text">${message.content}</div>
-                ${!isUser ? '<div class="message-actions"><button class="copy-btn"><i class="bi bi-copy"></i></button></div>' : ""}
+    function renderChannelsList(filterQuery = "") {
+        channelsContainer.innerHTML = "";
+        const query = filterQuery.toLowerCase().trim();
+
+        const chatIds = Object.keys(chatMetadata).sort((a, b) => {
+            return (chatMetadata[b]?.createdAt || 0) - (chatMetadata[a]?.createdAt || 0);
+        });
+
+        chatIds.forEach(id => {
+            const meta = chatMetadata[id];
+            if (!meta) return;
+
+            // Search filter
+            if (query && !meta.name.toLowerCase().includes(query)) {
+                // Check if any message contains query
+                const hasMessageMatch = (chatHistory[id] || []).some(m => m.content.toLowerCase().includes(query));
+                if (!hasMessageMatch) return;
+            }
+
+            const item = document.createElement("div");
+            item.className = `channel-item ${id === currentChatId ? "active" : ""}`;
+            item.setAttribute("data-chat-id", id);
+
+            const isGeneral = id === "general";
+
+            item.innerHTML = `
+                <div class="channel-item-left">
+                    <i class="bi ${isGeneral ? 'bi-chat-left-text' : 'bi-hash'} channel-item-icon"></i>
+                    <span class="channel-item-title">${escapeHtml(meta.name)}</span>
+                </div>
+                ${!isGeneral ? `
+                <div class="channel-item-actions">
+                    <button class="channel-action-btn edit-chat-btn" title="Переименовать" data-chat-id="${id}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="channel-action-btn delete-btn delete-chat-btn" title="Удалить" data-chat-id="${id}" data-chat-name="${escapeHtml(meta.name)}">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+                ` : ""}
+            `;
+
+            // Click channel switch
+            item.addEventListener("click", (e) => {
+                if (e.target.closest(".channel-action-btn")) return;
+                switchChat(id);
+                if (window.innerWidth <= 992) closeMobileDrawer();
+            });
+
+            // Edit chat name
+            const editBtn = item.querySelector(".edit-chat-btn");
+            if (editBtn) {
+                editBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const newTitle = prompt("Введите новое название диалога:", meta.name);
+                    if (newTitle && newTitle.trim()) {
+                        meta.name = newTitle.trim();
+                        saveStorageData();
+                        renderChannelsList(searchChatsInput.value);
+                        if (currentChatId === id) {
+                            currentChatNameElem.textContent = meta.name;
+                        }
+                        showToast("Диалог переименован");
+                    }
+                });
+            }
+
+            // Delete chat
+            const delBtn = item.querySelector(".delete-chat-btn");
+            if (delBtn) {
+                delBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openDeleteModal(id, meta.name);
+                });
+            }
+
+            channelsContainer.appendChild(item);
+        });
+    }
+
+    // Live search listener
+    if (searchChatsInput) {
+        searchChatsInput.addEventListener("input", (e) => {
+            renderChannelsList(e.target.value);
+        });
+    }
+
+    function switchChat(chatId) {
+        if (!chatMetadata[chatId]) {
+            chatId = "general";
+        }
+        currentChatId = chatId;
+        const meta = chatMetadata[chatId];
+        if (currentChatNameElem && meta) {
+            currentChatNameElem.textContent = meta.name;
+        }
+
+        // Update active class in list
+        document.querySelectorAll(".channel-item").forEach(el => {
+            if (el.getAttribute("data-chat-id") === chatId) {
+                el.classList.add("active");
+            } else {
+                el.classList.remove("active");
+            }
+        });
+
+        renderMessages();
+    }
+
+    function createNewChat(name) {
+        const chatId = "chat-" + Date.now();
+        const chatTitle = name.trim() || `Диалог ${Object.keys(chatMetadata).length + 1}`;
+
+        chatMetadata[chatId] = {
+            name: chatTitle,
+            createdAt: Date.now(),
+        };
+
+        chatHistory[chatId] = [];
+
+        saveStorageData();
+        renderChannelsList();
+        switchChat(chatId);
+        showToast(`Создан диалог «${chatTitle}»`);
+    }
+
+    if (createChatBtn && chatNameInput) {
+        createChatBtn.addEventListener("click", () => {
+            const name = chatNameInput.value.trim();
+            createNewChat(name || "Новый диалог");
+            chatNameInput.value = "";
+            if (newChatModal) newChatModal.hide();
+        });
+
+        chatNameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                createChatBtn.click();
+            }
+        });
+    }
+
+    function openDeleteModal(chatId, chatName) {
+        if (deleteChatNameSpan) deleteChatNameSpan.textContent = chatName;
+        if (confirmDeleteBtn) confirmDeleteBtn.setAttribute("data-chat-id", chatId);
+        if (deleteChatModal) deleteChatModal.show();
+    }
+
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener("click", () => {
+            const chatId = confirmDeleteBtn.getAttribute("data-chat-id");
+            if (chatId && chatId !== "general") {
+                delete chatMetadata[chatId];
+                delete chatHistory[chatId];
+                saveStorageData();
+
+                if (currentChatId === chatId) {
+                    switchChat("general");
+                }
+                renderChannelsList();
+                if (deleteChatModal) deleteChatModal.hide();
+                showToast("Диалог удален");
+            }
+        });
+    }
+
+    // Clear active chat messages
+    if (btnClearChat) {
+        btnClearChat.addEventListener("click", () => {
+            if (confirm(`Очистить все сообщения в текущем диалоге «${chatMetadata[currentChatId]?.name}»?`)) {
+                chatHistory[currentChatId] = [];
+                saveStorageData();
+                renderMessages();
+                showToast("История диалога очищена");
+            }
+        });
+    }
+
+    // ==========================================
+    // 8. Message Rendering & Interaction
+    // ==========================================
+    function renderMessages() {
+        const messages = chatHistory[currentChatId] || [];
+        chatMessages.innerHTML = "";
+
+        if (messages.length === 0) {
+            if (chatHeroScreen) {
+                chatHeroScreen.style.display = "flex";
+                chatMessages.appendChild(chatHeroScreen);
+            }
+        } else {
+            if (chatHeroScreen) chatHeroScreen.style.display = "none";
+
+            messages.forEach((msg, index) => {
+                const messageRow = createMessageElement(msg, index);
+                chatMessages.appendChild(messageRow);
+            });
+        }
+
+        scrollToBottom(false);
+    }
+
+    function createMessageElement(msg, index) {
+        const isUser = msg.role === "user";
+        const row = document.createElement("div");
+        row.className = `message-row ${isUser ? "user-row" : "ai-row"}`;
+        row.setAttribute("data-model", currentModel);
+        row.setAttribute("data-msg-idx", index);
+
+        const authorName = isUser ? "Вы" : (isGrokMode ? "Grok AI" : "GigaChat");
+        const avatarIcon = isUser ? '<i class="bi bi-person-fill"></i>' : '<i class="bi bi-stars"></i>';
+        const formattedHtml = renderMarkdownAndMath(msg.content);
+
+        row.innerHTML = `
+            <div class="message-avatar">
+                ${avatarIcon}
+            </div>
+            <div class="message-bubble-wrapper">
+                <div class="message-meta">
+                    <span class="message-author">${authorName}</span>
+                    <span class="message-timestamp">${msg.time || ""}</span>
+                </div>
+                <div class="message-body">${formattedHtml}</div>
+                <div class="message-actions-bar">
+                    <button class="msg-action-btn copy-msg-btn" title="Копировать текст">
+                        <i class="bi bi-clipboard"></i>
+                        <span>Копировать</span>
+                    </button>
+                    ${!isUser ? `
+                    <button class="msg-action-btn speak-msg-btn" title="Озвучить (TTS)">
+                        <i class="bi bi-volume-up"></i>
+                        <span>Озвучить</span>
+                    </button>
+                    <button class="msg-action-btn retry-msg-btn" title="Повторить генерацию">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Повтор</span>
+                    </button>
+                    ` : `
+                    <button class="msg-action-btn edit-msg-btn" title="Редактировать запрос">
+                        <i class="bi bi-pencil"></i>
+                        <span>Изменить</span>
+                    </button>
+                    `}
+                    <button class="msg-action-btn delete-msg-btn" title="Удалить сообщение">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </div>
         `;
 
-      // Добавляем обработчик копирования для кнопки скопировать
-      if (!isUser) {
-        const copyBtn = messageDiv.querySelector(".copy-btn");
+        // Render Math equations if KaTeX is present
+        renderMathFormulas(row.querySelector(".message-body"));
+
+        // Attach listeners for code block copy buttons
+        row.querySelectorAll(".copy-code-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const codeEl = btn.closest(".code-block-wrapper")?.querySelector("code");
+                if (codeEl) {
+                    navigator.clipboard.writeText(codeEl.innerText);
+                    const originalText = btn.innerHTML;
+                    btn.classList.add("copied");
+                    btn.innerHTML = `<i class="bi bi-check2"></i> <span>Скопировано!</span>`;
+                    setTimeout(() => {
+                        btn.classList.remove("copied");
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                }
+            });
+        });
+
+        // Copy entire message
+        const copyBtn = row.querySelector(".copy-msg-btn");
         if (copyBtn) {
-          copyBtn.addEventListener("click", () => {
-            navigator.clipboard.writeText(message.content);
-            showToast("Сообщение скопировано!");
-          });
+            copyBtn.addEventListener("click", () => {
+                navigator.clipboard.writeText(msg.content);
+                showToast("Сообщение скопировано в буфер обмена");
+            });
         }
-      }
 
-      chatMessages.appendChild(messageDiv);
-    });
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  // =========== Функция для отправки запроса к бэкенду ===========
-  async function sendMessage(content) {
-    try {
-      loadingIndicator.style.display = "flex";
-      messageInput.disabled = true;
-
-      // Determine which API endpoint to use based on the current mode
-      const endpoint = isGrokMode ? "/api/grok" : "/api/chat";
-
-      // Formulate the URL with proper parameter encoding
-      const url = new URL(endpoint, window.location.origin);
-      url.searchParams.append("content", content);
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      // Check HTTP status
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}. ${error}`);
-      }
-
-      // Parse JSON response
-      const data = await response.json();
-
-      // Check if content exists in response
-      if (!data?.content) {
-        throw new Error("Invalid response format");
-      }
-
-      // Add message to chat
-      addMessage(data.content, "assistant");
-    } catch (error) {
-      console.error("Error:", error);
-      addMessage(
-        `
-    ⚠️ Произошла ошибка:<br>
-    <small>${error.message}</small>
-    `,
-        "assistant",
-      );
-
-      // Ask if user wants to retry
-      if (confirm("Ошибка при отправке. Попробовать снова?")) {
-        await sendMessage(content);
-      }
-    } finally {
-      loadingIndicator.style.display = "none";
-      messageInput.disabled = false;
-    }
-  }
-  // =========== Создание нового чата ===========
-  function createNewChat(chatName) {
-    // Генерируем уникальный ID для чата
-    const chatId = "chat-" + Date.now();
-
-    // Получаем имя ассистента в зависимости от режима
-    const assistantName = isGrokMode ? "Grok" : "GigaChat";
-
-    // Инициализируем историю для нового чата
-    chatHistory[chatId] = [
-      {
-        role: "assistant",
-        content: `Новый чат "${chatName}" создан. Чем я могу вам помочь?`,
-      },
-    ];
-
-    // Добавляем новый чат в список каналов
-    const channelItem = document.createElement("div");
-    channelItem.className = "channel-item";
-    channelItem.setAttribute("data-chat-id", chatId);
-    channelItem.innerHTML = `
-        <i class="fa-solid fa-hashtag channel-icon"></i> ${chatName}
-        <span class="delete-channel" data-chat-id="${chatId}" data-chat-name="${chatName}">
-            <i class="fa-solid fa-trash-can"></i>
-        </span>
-    `;
-
-    // Добавляем элемент в контейнер каналов
-    channelsContainer.appendChild(channelItem);
-
-    // Добавляем обработчик для переключения на новый канал
-    setupChannelItemEvent(channelItem);
-
-    // Сохраняем чаты в localStorage
-    saveChatsToLocalStorage();
-
-    // Переключаемся на новый чат
-    switchChat(chatId, chatName);
-  }
-
-  // =========== Удаление чата ===========
-  function deleteChat(chatId) {
-    // Удаляем из истории
-    delete chatHistory[chatId];
-
-    // Удаляем элемент из DOM
-    const channelItem = document.querySelector(
-      `.channel-item[data-chat-id="${chatId}"]`,
-    );
-    if (channelItem) {
-      channelItem.remove();
-    }
-
-    // Сохраняем чаты в localStorage
-    saveChatsToLocalStorage();
-
-    // Если удаляем текущий чат, переключаемся на общий
-    if (currentChatId === chatId) {
-      switchChat("general", "общий-чат");
-    }
-  }
-
-  // =========== Переключение между чатами ===========
-  function switchChat(chatId, chatName) {
-    // Обновляем текущий чат
-    currentChatId = chatId;
-    currentChatName.textContent = chatName;
-
-    // Обновляем активный класс
-    document.querySelectorAll(".channel-item").forEach((item) => {
-      item.classList.remove("active");
-    });
-
-    const activeChannel = document.querySelector(
-      `.channel-item[data-chat-id="${chatId}"]`,
-    );
-    if (activeChannel) {
-      activeChannel.classList.add("active");
-    }
-
-    // Загружаем историю
-    loadChatHistory(chatId);
-
-    // На мобильных устройствах закрыть сайдбар после выбора чата
-    if (window.innerWidth <= 768) {
-      closeAllPanels();
-    }
-  }
-
-  // =========== Сохранение чатов в localStorage ===========
-  function saveChatsToLocalStorage() {
-    // Используем разные ключи в зависимости от режима
-    const historyKey = isGrokMode ? "grok_history" : "gigachat_history";
-    const channelsKey = isGrokMode ? "grok_channels" : "gigachat_channels";
-
-    localStorage.setItem(historyKey, JSON.stringify(chatHistory));
-    localStorage.setItem(channelsKey, JSON.stringify(getChannelsInfo()));
-  }
-
-  // =========== Загрузка чатов из localStorage ===========
-  function loadChatsFromLocalStorage() {
-    // Используем разные ключи в зависимости от режима
-    const historyKey = isGrokMode ? "grok_history" : "gigachat_history";
-    const channelsKey = isGrokMode ? "grok_channels" : "gigachat_channels";
-
-    const savedHistory = localStorage.getItem(historyKey);
-    const savedChannels = localStorage.getItem(channelsKey);
-
-    // Если в localStorage есть данные, загружаем их
-    if (savedHistory) {
-      chatHistory = JSON.parse(savedHistory);
-    } else {
-      // Иначе инициализируем дефолтное состояние
-      initializeWelcomeMessage();
-    }
-
-    // Если есть сохраненные каналы, создаем их в DOM
-    if (savedChannels) {
-      const channels = JSON.parse(savedChannels);
-
-      // Очищаем контейнер каналов перед добавлением новых
-      // Сохраняем только элементы общего канала, если он есть
-      const generalChannel = Array.from(channelsContainer.children).filter(
-        (el) => el.getAttribute("data-chat-id") === "general",
-      );
-
-      channelsContainer.innerHTML = "";
-
-      // Возвращаем элемент общего канала, если он был
-      if (generalChannel.length > 0) {
-        generalChannel.forEach((el) => channelsContainer.appendChild(el));
-      }
-
-      // Добавляем все остальные каналы
-      channels.forEach((channel) => {
-        if (channel.id !== "general") {
-          const channelItem = document.createElement("div");
-          channelItem.className = "channel-item";
-          channelItem.setAttribute("data-chat-id", channel.id);
-          channelItem.innerHTML = `
-                    <i class="fa-solid fa-hashtag channel-icon"></i> ${channel.name}
-                    <span class="delete-channel" data-chat-id="${channel.id}" data-chat-name="${channel.name}">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </span>
-                `;
-
-          channelsContainer.appendChild(channelItem);
-
-          // Добавляем обработчик для канала
-          setupChannelItemEvent(channelItem);
+        // Text-to-speech
+        const speakBtn = row.querySelector(".speak-msg-btn");
+        if (speakBtn) {
+            speakBtn.addEventListener("click", () => {
+                speakText(msg.content);
+            });
         }
-      });
-    } else {
-      // Если нет сохраненных каналов, инициализируем дефолтное состояние
-      initializeWelcomeMessage();
-    }
 
-    // Загружаем историю текущего чата
-    loadChatHistory(currentChatId);
-  }
-
-  // =========== Обработчик перехода между Grok и GigaChat ===========
-  const grokServerIcon = document.getElementById("grok-server-icon");
-  const gigaChatServerIcon = document.getElementById("gigachat-server-icon");
-
-  if (grokServerIcon) {
-    grokServerIcon.addEventListener("click", function () {
-      window.location.href = "/grok";
-    });
-  }
-
-  if (gigaChatServerIcon) {
-    gigaChatServerIcon.addEventListener("click", function () {
-      window.location.href = "/";
-    });
-  }
-
-  // =========== Получение информации о каналах ===========
-  function getChannelsInfo() {
-    const channels = [];
-
-    document.querySelectorAll(".channel-item").forEach((item) => {
-      const id = item.getAttribute("data-chat-id");
-      // Извлекаем текст до элемента с классом delete-channel
-      let name = "";
-      for (let node of item.childNodes) {
-        if (node.nodeType === 3) {
-          // Текстовый узел
-          name += node.textContent.trim();
-        } else if (
-          node.nodeType === 1 &&
-          !node.classList.contains("delete-channel")
-        ) {
-          // Элемент
-          if (node.tagName.toLowerCase() === "i") continue; // Пропускаем иконку
-          name += node.textContent.trim();
-        } else if (
-          node.classList &&
-          node.classList.contains("delete-channel")
-        ) {
-          break; // Останавливаемся, когда достигли кнопки удаления
+        // Retry / regenerate response
+        const retryBtn = row.querySelector(".retry-msg-btn");
+        if (retryBtn) {
+            retryBtn.addEventListener("click", () => {
+                regenerateResponse(index);
+            });
         }
-      }
 
-      channels.push({
-        id: id,
-        name: name.trim(),
-      });
-    });
-
-    return channels;
-  }
-
-  // =========== Функция настройки обработчика событий для канала ===========
-  function setupChannelItemEvent(channelItem) {
-    channelItem.addEventListener("click", function (e) {
-      // Игнорируем клик по кнопке удаления
-      if (e.target.closest(".delete-channel")) return;
-
-      document.querySelectorAll(".channel-item").forEach((item) => {
-        item.classList.remove("active");
-      });
-      channelItem.classList.add("active");
-
-      // Обновление заголовка чата
-      const chatId = channelItem.getAttribute("data-chat-id");
-
-      // Получаем имя чата из текста канала (без иконки и кнопки удаления)
-      let chatName = "";
-      for (let node of channelItem.childNodes) {
-        if (node.nodeType === 3) {
-          // Текстовый узел
-          chatName += node.textContent.trim();
-        } else if (
-          node.nodeType === 1 &&
-          !node.classList.contains("delete-channel")
-        ) {
-          // Элемент
-          if (node.tagName.toLowerCase() === "i") continue; // Пропускаем иконку
-          chatName += node.textContent.trim();
+        // Edit user prompt
+        const editBtn = row.querySelector(".edit-msg-btn");
+        if (editBtn) {
+            editBtn.addEventListener("click", () => {
+                messageInput.value = msg.content;
+                messageInput.focus();
+                adjustTextareaHeight();
+                showToast("Текст помещен в поле ввода для редактирования");
+            });
         }
-      }
 
-      // Переключаемся на выбранный чат
-      switchChat(chatId, chatName.trim());
-    });
-  }
+        // Delete single message
+        const delMsgBtn = row.querySelector(".delete-msg-btn");
+        if (delMsgBtn) {
+            delMsgBtn.addEventListener("click", () => {
+                chatHistory[currentChatId].splice(index, 1);
+                saveStorageData();
+                renderMessages();
+            });
+        }
 
-  // =========== Функция отображения всплывающего уведомления ===========
-  function showToast(message) {
-    // Проверяем, существует ли уже контейнер для тостов
-    let toastContainer = document.getElementById("toast-container");
-    if (!toastContainer) {
-      toastContainer = document.createElement("div");
-      toastContainer.id = "toast-container";
-      toastContainer.style.cssText =
-        "position: fixed; bottom: 20px; right: 20px; z-index: 9999;";
-      document.body.appendChild(toastContainer);
+        return row;
     }
 
-    // Создаем новый тост
-    const toast = document.createElement("div");
-    toast.className = "toast";
-    toast.style.cssText =
-      "background-color: #333; color: #fff; padding: 10px 20px; border-radius: 4px; margin-top: 10px; opacity: 0; transition: opacity 0.3s;";
-    toast.textContent = message;
+    // Text-to-Speech (TTS)
+    function speakText(text) {
+        if (!('speechSynthesis' in window)) {
+            showToast("Синтез речи не поддерживается вашим браузером");
+            return;
+        }
 
-    // Добавляем тост в контейнер
-    toastContainer.appendChild(toast);
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            showToast("Озвучивание остановлено");
+            return;
+        }
 
-    // Отображаем тост
-    setTimeout(() => {
-      toast.style.opacity = "1";
-    }, 10);
+        // Strip markdown formatting for cleaner speech
+        const plainText = text.replace(/[#*`_~$$\[\]]/g, '');
+        const utterance = new SpeechSynthesisUtterance(plainText);
+        utterance.lang = "ru-RU";
+        utterance.rate = 1.0;
 
-    // Скрываем и удаляем тост через 3 секунды
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      setTimeout(() => {
-        toastContainer.removeChild(toast);
-      }, 300);
-    }, 3000);
-  }
+        utterance.onstart = () => showToast("🔊 Озвучивание сообщения...");
+        utterance.onend = () => {};
+        utterance.onerror = () => showToast("Ошибка воспроизведения звука");
 
-  // =========== Функция отправки сообщения ===========
-  function handleSendMessage() {
-    const content = messageInput.value.trim();
-    if (content) {
-      // Добавляем сообщение пользователя в чат
-      addMessage(content, "user");
-
-      // Отправляем запрос к бэкенду
-      sendMessage(content);
-
-      // Очищаем поле ввода
-      messageInput.value = "";
+        window.speechSynthesis.speak(utterance);
     }
-  }
 
-  // =========== Обработчики событий ===========
-
-  // Отправка сообщения при нажатии Enter
-  if (messageInput) {
-    messageInput.addEventListener("keypress", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        handleSendMessage();
-      }
-    });
-  }
-
-  // Отправка сообщения при клике на кнопку
-  if (sendButton) {
-    sendButton.addEventListener("click", function () {
-      handleSendMessage();
-    });
-  }
-
-  // Обработчик для переключения между чатами
-  if (channelList) {
-    channelList.addEventListener("click", function (event) {
-      // Проверяем, был ли клик по элементу канала
-      let channelItem = event.target.closest(".channel-item");
-      if (channelItem) {
-        const deleteBtn = event.target.closest(".delete-channel");
-
-        // Если клик был не по кнопке удаления
-        if (!deleteBtn) {
-          const chatId = channelItem.getAttribute("data-chat-id");
-
-          // Получаем имя чата из текста канала (без иконки и кнопки удаления)
-          let chatName = "";
-          for (let node of channelItem.childNodes) {
-            if (node.nodeType === 3) {
-              // Текстовый узел
-              chatName += node.textContent.trim();
-            } else if (
-              node.nodeType === 1 &&
-              !node.classList.contains("delete-channel")
-            ) {
-              // Элемент
-              if (node.tagName.toLowerCase() === "i") continue; // Пропускаем иконку
-              chatName += node.textContent.trim();
+    // ==========================================
+    // 9. Prompt Starters & Composer UX
+    // ==========================================
+    // Starter cards click handler
+    document.querySelectorAll(".starter-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const prompt = card.getAttribute("data-prompt");
+            if (prompt) {
+                messageInput.value = prompt;
+                adjustTextareaHeight();
+                handleSendMessage();
             }
-          }
+        });
+    });
 
-          switchChat(chatId, chatName.trim());
+    // Auto resize textarea & char counter
+    function adjustTextareaHeight() {
+        messageInput.style.height = "auto";
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 180) + "px";
+
+        const count = messageInput.value.length;
+        if (charCounter) {
+            charCounter.textContent = `${count} симв.`;
         }
-      }
 
-      // Если клик был по кнопке удаления
-      if (event.target.closest(".delete-channel")) {
-        const deleteBtn = event.target.closest(".delete-channel");
-        const chatId = deleteBtn.getAttribute("data-chat-id");
-        const chatName = deleteBtn.getAttribute("data-chat-name");
+        if (sendButton) {
+            sendButton.disabled = count === 0 || isGenerating;
+        }
+    }
 
-        // Показываем модальное окно для подтверждения
-        document.getElementById("delete-chat-name").textContent = chatName;
-        document
-          .getElementById("confirm-delete-btn")
-          .setAttribute("data-chat-id", chatId);
-        deleteChatModal.show();
+    messageInput.addEventListener("input", adjustTextareaHeight);
 
-        // Предотвращаем всплытие события для предотвращения переключения на канал
-        event.stopPropagation();
-      }
+    // Keyboard Shortcuts: Enter sends, Shift+Enter new line
+    messageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (!isGenerating && messageInput.value.trim().length > 0) {
+                handleSendMessage();
+            }
+        }
     });
-  }
 
-  // Подтверждение удаления чата
-  if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener("click", function () {
-      const chatId = this.getAttribute("data-chat-id");
-      deleteChat(chatId);
-      deleteChatModal.hide();
+    if (sendButton) {
+        sendButton.addEventListener("click", () => {
+            if (!isGenerating && messageInput.value.trim().length > 0) {
+                handleSendMessage();
+            }
+        });
+    }
+
+    if (btnClearInput) {
+        btnClearInput.addEventListener("click", () => {
+            messageInput.value = "";
+            adjustTextareaHeight();
+            messageInput.focus();
+        });
+    }
+
+    // Speech-to-Text (Voice input)
+    if (btnVoiceInput) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = "ru-RU";
+
+            recognition.onstart = () => {
+                isRecording = true;
+                btnVoiceInput.classList.add("recording");
+                btnVoiceInput.innerHTML = `<i class="bi bi-mic-fill"></i>`;
+                showToast("🎙️ Идет запись голоса... Говорите");
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                messageInput.value = transcript;
+                adjustTextareaHeight();
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                stopVoiceRecording();
+                showToast(`Ошибка микрофона: ${event.error}`);
+            };
+
+            recognition.onend = () => {
+                stopVoiceRecording();
+            };
+
+            btnVoiceInput.addEventListener("click", () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            });
+        } else {
+            btnVoiceInput.style.display = "none";
+        }
+    }
+
+    function stopVoiceRecording() {
+        isRecording = false;
+        if (btnVoiceInput) {
+            btnVoiceInput.classList.remove("recording");
+            btnVoiceInput.innerHTML = `<i class="bi bi-mic"></i>`;
+        }
+    }
+
+    // Scroll to bottom helper
+    function scrollToBottom(smooth = true) {
+        setTimeout(() => {
+            chatMessagesContainer.scrollTo({
+                top: chatMessagesContainer.scrollHeight,
+                behavior: smooth ? "smooth" : "auto",
+            });
+        }, 50);
+    }
+
+    // Floating Scroll-down button
+    chatMessagesContainer.addEventListener("scroll", () => {
+        const distFromBottom = chatMessagesContainer.scrollHeight - chatMessagesContainer.scrollTop - chatMessagesContainer.clientHeight;
+        if (distFromBottom > 150) {
+            scrollBottomBtn.classList.add("visible");
+        } else {
+            scrollBottomBtn.classList.remove("visible");
+        }
     });
-  }
 
-  // =========== Мобильный тогглер для сайдбара ===========
-  const mobileToggle = document.getElementById("toggle-channels");
-  const toggleIcon = document.getElementById("toggle-icon");
+    if (scrollBottomBtn) {
+        scrollBottomBtn.addEventListener("click", () => {
+            scrollToBottom(true);
+        });
+    }
 
-  if (mobileToggle && sidebar) {
-    mobileToggle.addEventListener("click", function () {
-      sidebar.style.display =
-        sidebar.style.display === "none" ? "block" : "none";
-      if (toggleIcon) {
-        toggleIcon.classList.toggle("bi-arrows-collapse-vertical");
-        toggleIcon.classList.toggle("bi-arrows-expand-vertical");
-      }
-    });
-  }
+    // ==========================================
+    // 10. API Communication & AI Generation
+    // ==========================================
+    async function handleSendMessage() {
+        const text = messageInput.value.trim();
+        if (!text || isGenerating) return;
 
-  // =========== Подсветка кода при загрузке ===========
-  if (typeof hljs !== "undefined") {
-    hljs.highlightAll();
-  }
+        // Auto-rename chat if it's the first message and still has default name
+        if (chatHistory[currentChatId]?.length === 0 && chatMetadata[currentChatId]?.name.startsWith("Диалог")) {
+            const shortName = text.slice(0, 24) + (text.length > 24 ? "..." : "");
+            chatMetadata[currentChatId].name = shortName;
+            currentChatNameElem.textContent = shortName;
+            renderChannelsList();
+        }
 
-  // =========== Загружаем чаты при инициализации ===========
-  loadChatsFromLocalStorage();
+        // Append User Message
+        const userMsg = {
+            role: "user",
+            content: text,
+            time: getCurrentTimeFormatted(),
+        };
 
-  // Устанавливаем обработчики для существующих каналов
-  document.querySelectorAll(".channel-item").forEach(setupChannelItemEvent);
+        chatHistory[currentChatId].push(userMsg);
+        saveStorageData();
+
+        messageInput.value = "";
+        adjustTextareaHeight();
+        renderMessages();
+
+        // Send to backend
+        await requestAiResponse(text);
+    }
+
+    async function requestAiResponse(promptText) {
+        isGenerating = true;
+        setComposerBusy(true);
+
+        if (typingContainer) {
+            typingModelLabel.textContent = `${currentModelTitle} думает...`;
+            typingContainer.style.display = "flex";
+            scrollToBottom(true);
+        }
+
+        const endpoint = isGrokMode ? "/api/grok" : "/api/chat";
+        const url = new URL(endpoint, window.location.origin);
+        url.searchParams.append("content", promptText);
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            let assistantContent = data.raw || data.content;
+            if (!assistantContent) {
+                throw new Error("Пустой ответ от сервера");
+            }
+
+            // Save assistant reply
+            chatHistory[currentChatId].push({
+                role: "assistant",
+                content: assistantContent,
+                time: getCurrentTimeFormatted(),
+            });
+
+            saveStorageData();
+            renderMessages();
+        } catch (error) {
+            console.error("AI Generation Error:", error);
+            
+            // Helpful and styled error response
+            const errorMsg = `⚠️ **Не удалось получить ответ от ${currentModelTitle}**\n\n` +
+                `*Причина:* \`${error.message}\`\n\n` +
+                `> 💡 **Подсказка:** Проверьте наличие и валидность API-ключа в файле \`config.yaml\` на сервере.\n` +
+                `> Для **GigaChat** укажите ключ от [giga.chat](https://giga.chat), а для **Grok** — ключ от [requesty.ai](https://www.requesty.ai).`;
+
+            chatHistory[currentChatId].push({
+                role: "assistant",
+                content: errorMsg,
+                time: getCurrentTimeFormatted(),
+            });
+
+            saveStorageData();
+            renderMessages();
+        } finally {
+            isGenerating = false;
+            setComposerBusy(false);
+            if (typingContainer) typingContainer.style.display = "none";
+            scrollToBottom(true);
+        }
+    }
+
+    async function regenerateResponse(assistantMsgIndex) {
+        if (isGenerating) return;
+        // Find preceding user message
+        const messages = chatHistory[currentChatId] || [];
+        let promptToRetry = "";
+
+        for (let i = assistantMsgIndex - 1; i >= 0; i--) {
+            if (messages[i].role === "user") {
+                promptToRetry = messages[i].content;
+                break;
+            }
+        }
+
+        if (promptToRetry) {
+            // Remove the old assistant response
+            chatHistory[currentChatId].splice(assistantMsgIndex, 1);
+            saveStorageData();
+            renderMessages();
+            await requestAiResponse(promptToRetry);
+        } else {
+            showToast("Не удалось найти исходный запрос для повтора");
+        }
+    }
+
+    function setComposerBusy(busy) {
+        if (messageInput) messageInput.disabled = busy;
+        if (sendButton) sendButton.disabled = busy || messageInput.value.trim().length === 0;
+    }
+
+    // ==========================================
+    // 11. Export & Backup Engine
+    // ==========================================
+    if (btnExportMarkdown) {
+        btnExportMarkdown.addEventListener("click", () => {
+            exportChatToMarkdown();
+        });
+    }
+
+    if (btnExportJson) {
+        btnExportJson.addEventListener("click", () => {
+            exportChatToJson();
+        });
+    }
+
+    function exportChatToMarkdown() {
+        const meta = chatMetadata[currentChatId] || { name: "chat" };
+        const messages = chatHistory[currentChatId] || [];
+
+        let mdContent = `# Диалог: ${meta.name}\n`;
+        mdContent += `*Модель:* ${currentModelTitle} | *Экспортировано:* ${new Date().toLocaleString('ru-RU')}\n\n---\n\n`;
+
+        messages.forEach(msg => {
+            const author = msg.role === "user" ? "### 👤 Пользователь" : `### 🤖 ${currentModelTitle}`;
+            mdContent += `${author} *(${msg.time || ""})*\n\n${msg.content}\n\n---\n\n`;
+        });
+
+        downloadFile(`${slugify(meta.name)}.md`, mdContent, "text/markdown;charset=utf-8");
+        showToast("Файл Markdown успешно сохранен");
+    }
+
+    function exportChatToJson() {
+        const exportData = {
+            model: currentModel,
+            metadata: chatMetadata,
+            history: chatHistory,
+            exportedAt: new Date().toISOString(),
+        };
+
+        const jsonString = JSON.stringify(exportData, null, 2);
+        downloadFile(`ai-chat-backup-${currentModel}-${Date.now()}.json`, jsonString, "application/json;charset=utf-8");
+        showToast("Резервная копия JSON сохранена");
+    }
+
+    function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ==========================================
+    // 12. Utilities & Toast Notifications
+    // ==========================================
+    function showToast(message, icon = "bi-info-circle") {
+        let container = document.getElementById("toast-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toast-container";
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement("div");
+        toast.className = "app-toast";
+        toast.innerHTML = `<i class="bi ${icon} text-primary"></i> <span>${escapeHtml(message)}</span>`;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(-10px)";
+            toast.style.transition = "all 0.3s ease";
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    }
+
+    function getCurrentTimeFormatted() {
+        const now = new Date();
+        return now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function slugify(text) {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-а-яё]+/gi, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    }
+
+    // ==========================================
+    // 13. System Initialization
+    // ==========================================
+    initTheme();
+    initModelHeader();
+    loadStorageData();
+    adjustTextareaHeight();
 });
-
-// Автоматическая подсветка при загрузке и после динамического контента
