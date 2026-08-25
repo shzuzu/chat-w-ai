@@ -1,406 +1,397 @@
-<!doctype html>
-<html lang="ru">
-    <head>
-        <style>
-            @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-        </style>
-        <meta charset="UTF-8" />
-        <!-- Правильный viewport для мобильных устройств -->
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <title>AI Chat</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            href="/image/favicon-96x96.png"
-            sizes="96x96"
-        />
-        <link rel="icon" type="image/svg+xml" href="/image/favicon.svg" />
-        <link rel="shortcut icon" href="/image/favicon.ico" />
-        <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/image/apple-touch-icon.png"
-        />
-        <meta name="apple-mobile-web-app-title" content="AI Chat" />
-        <link rel="manifest" href="/image/site.webmanifest" />
-    </head>
-    <link rel="stylesheet" href="style.css" />
-    <body>
-        <div class="container-fluid h-100 p-0">
-            <div class="row g-0 h-100">
-                <!-- Server Icons Column -->
-                <div class="col-auto server-column" id="server-column">
-                    <div class="server-list">
-                        <!-- Мобильный заголовок с кнопкой закрытия -->
-                        <div
-                            class="mobile-server-title d-md-none p-3 position-relative"
-                        >
-                            Выберите ИИ:
-                            <button
-                                id="close-server-list"
-                                class="btn btn-link text-white position-absolute end-0 top-50 translate-middle-y me-3"
-                            >
-                                <i class="bi bi-x-lg fs-4"></i>
-                            </button>
-                        </div>
-                        <!-- Основной чат (GigaChat) -->
-                        <div
-                            class="server-icon active"
-                            data-model="gigachat"
-                            id="giga-server-icon"
-                            onclick="window.location.href='/'"
-                        >
-                            <svg
-                                version="1.0"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="300.000000pt"
-                                height="152.000000pt"
-                                viewBox="0 0 300.000000 152.000000"
-                                preserveAspectRatio="xMidYMid meet"
-                            >
-                                <g
-                                    transform="translate(0.000000,152.000000) scale(0.100000,-0.100000)"
-                                    fill="#ffffff"
-                                    stroke="none"
-                                >
-                                    <path
-                                        d="M433 1116 c-121 -30 -179 -104 -171 -221 5 -85 38 -134 115 -171 50 -25 72 -29 163 -32 105 -4 117 -2 222 42 11 5 18 1 23 -13 6 -18 14 -21 71 -21 l65 0 -3 118 -3 117 -162 3 -163 2 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -35 -155 -44 -207 -13 -56 35 -56 127 0 162 46 29 160 23 201 -9 25 -19 41 -22 117 -22 48 0 90 4 94 10 10 17 -22 77 -57 103 -19 15 -63 33 -98 41 -78 19 -254 19 -327 2z"
-                                    />
-                                    <path
-                                        d="M1541 1115 c-123 -35 -166 -88 -166 -206 0 -99 27 -144 112 -186 54 -26 66 -28 183 -28 112 0 130 2 169 23 35 19 45 21 52 10 5 -7 9 -16 9 -20 0 -5 29 -8 65 -8 l65 0 0 120 0 120 -165 0 -165 0 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -31 -148 -44 -199 -17 -65 33 -66 135 -1 168 50 26 155 20 194 -11 25 -19 41 -22 117 -22 48 0 90 4 94 10 9 14 -19 72 -46 97 -45 41 -105 55 -249 59 -100 3 -149 0 -189 -11z"
-                                    />
-                                    <path
-                                        d="M950 1060 l0 -60 50 0 50 0 0 -90 0 -90 -50 0 -50 0 0 -60 0 -60 195 0 195 0 0 59 0 60 -47 3 -48 3 0 85 0 85 48 3 47 3 0 60 0 59 -195 0 -195 0 0 -60z"
-                                    />
-                                    <path
-                                        d="M2215 1058 c-16 -35 -59 -126 -97 -203 -37 -77 -68 -143 -68 -147 0 -5 43 -8 95 -8 92 0 96 1 107 25 11 25 13 25 128 25 115 0 117 0 128 -25 11 -24 14 -25 117 -25 58 0 105 2 105 5 0 3 -48 97 -106 210 l-106 205 -137 0 -137 0 -29 -62z m194 -117 c11 -27 21 -54 21 -60 0 -7 -23 -11 -55 -11 -30 0 -55 2 -55 4 0 13 53 116 60 116 4 0 17 -22 29 -49z"
-                                    />
-                                    <path
-                                        d="M495 659 c-165 -16 -244 -87 -245 -218 0 -148 108 -221 327 -221 50 0 116 5 145 11 103 21 178 85 178 152 l0 27 -94 0 c-92 0 -95 -1 -126 -31 -30 -30 -33 -31 -106 -27 -69 3 -79 6 -100 31 -32 37 -32 90 -1 121 46 45 169 45 214 0 22 -22 32 -24 118 -24 89 0 95 1 95 21 0 27 -16 57 -48 92 -49 52 -205 81 -357 66z"
-                                    />
-                                    <path
-                                        d="M937 654 c-4 -4 -7 -101 -7 -216 l0 -208 100 0 100 0 0 75 0 75 120 0 119 0 3 -72 3 -73 98 -3 97 -3 -2 213 -3 213 -95 0 -95 0 -3 -72 -3 -73 -119 0 -119 0 -3 73 -3 72 -90 3 c-50 1 -94 0 -98 -4z"
-                                    />
-                                    <path
-                                        d="M1754 588 c-20 -40 -67 -137 -105 -215 l-68 -143 97 0 97 0 17 30 17 30 110 0 110 0 16 -30 16 -30 105 0 c58 0 104 4 102 8 -13 31 -203 400 -211 410 -7 8 -47 12 -138 12 l-129 0 -36 -72z m191 -114 c14 -31 25 -60 25 -65 0 -5 -25 -9 -55 -9 -30 0 -55 4 -55 10 0 10 52 120 57 120 2 0 14 -25 28 -56z"
-                                    />
-                                    <path
-                                        d="M2154 646 c-3 -7 -4 -38 -2 -67 l3 -54 93 -3 92 -3 0 -144 0 -145 95 0 94 0 3 143 3 142 93 3 93 3 -3 67 -3 67 -278 3 c-229 2 -278 0 -283 -12z"
-                                    />
-                                </g>
-                            </svg>
-                        </div>
-                        <!-- Альтернативная модель (Grok) -->
-                        <div
-                            class="server-icon"
-                            data-model="grok"
-                            id="grok-server-icon"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                xmlns:xlink="http://www.w3.org/1999/xlink"
-                                viewBox="0,0,256,256"
-                                width="48px"
-                                height="48px"
-                                fill-rule="nonzero"
-                            >
-                                <g
-                                    fill="#ffffff"
-                                    fill-rule="nonzero"
-                                    stroke="none"
-                                    stroke-width="1"
-                                    stroke-linecap="butt"
-                                    stroke-linejoin="miter"
-                                    stroke-miterlimit="10"
-                                    stroke-dasharray=""
-                                    stroke-dashoffset="0"
-                                    font-family="none"
-                                    font-weight="none"
-                                    font-size="none"
-                                    text-anchor="none"
-                                    style="mix-blend-mode: normal"
-                                >
-                                    <g transform="scale(5.33333,5.33333)">
-                                        <path
-                                            d="M18.542,30.532l15.956,-11.776c0.783,-0.576 1.902,-0.354 2.274,0.545c1.962,4.728 1.084,10.411 -2.819,14.315c-3.903,3.901 -9.333,4.756 -14.299,2.808l-5.423,2.511c7.778,5.315 17.224,4 23.125,-1.903c4.682,-4.679 6.131,-11.058 4.775,-16.812l0.011,0.011c-1.966,-8.452 0.482,-11.829 5.501,-18.735c0.116,-0.164 0.237,-0.33 0.357,-0.496l-6.602,6.599v-0.022l-22.86,22.958M15.248,33.392c-5.582,-5.329 -4.619,-13.579 0.142,-18.339c3.521,-3.522 9.294,-4.958 14.331,-2.847l5.412,-2.497c-0.974,-0.704 -2.224,-1.46 -3.659,-1.994c-6.478,-2.666 -14.238,-1.34 -19.505,3.922c-5.065,5.064 -6.659,12.851 -3.924,19.496c2.044,4.965 -1.307,8.48 -4.682,12.023c-1.199,1.255 -2.396,2.514 -3.363,3.844l15.241,-13.608"
-                                        ></path>
-                                    </g>
-                                </g>
-                            </svg>
-                        </div>
+<!DOCTYPE html>
+<html lang="ru" data-theme="slate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Studio & Chat</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <!-- Highlight.js for Code Highlighting (Tokyo Night / Atom One) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/png" href="/image/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/image/favicon.svg">
+    <link rel="shortcut icon" href="/image/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/image/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="AI Chat">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/image/site.webmanifest">
+    
+    <!-- App Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- 1. Leftmost Model Pillar Navigation -->
+        <aside class="server-pillar" id="server-pillar">
+            <div class="brand-badge" title="AI Hub">
+                <i class="bi bi-stars"></i>
+            </div>
+            
+            <div class="server-divider"></div>
+            
+            <!-- GigaChat Icon Button -->
+            <button class="model-pill-btn active" data-model="gigachat" id="gigachat-server-btn" data-tooltip="GigaChat (Сбер)">
+                <svg width="24" height="24" viewBox="0 0 300 152" fill="currentColor">
+                    <g transform="translate(0,152) scale(0.1,-0.1)">
+                        <path d="M433 1116 c-121 -30 -179 -104 -171 -221 5 -85 38 -134 115 -171 50 -25 72 -29 163 -32 105 -4 117 -2 222 42 11 5 18 1 23 -13 6 -18 14 -21 71 -21 l65 0 -3 118 -3 117 -162 3 -163 2 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -35 -155 -44 -207 -13 -56 35 -56 127 0 162 46 29 160 23 201 -9 25 -19 41 -22 117 -22 48 0 90 4 94 10 10 17 -22 77 -57 103 -19 15 -63 33 -98 41 -78 19 -254 19 -327 2z"/>
+                        <path d="M1541 1115 c-123 -35 -166 -88 -166 -206 0 -99 27 -144 112 -186 54 -26 66 -28 183 -28 112 0 130 2 169 23 35 19 45 21 52 10 5 -7 9 -16 9 -20 0 -5 29 -8 65 -8 l65 0 0 120 0 120 -165 0 -165 0 0 -45 0 -45 60 0 c33 0 60 -4 60 -8 0 -31 -148 -44 -199 -17 -65 33 -66 135 -1 168 50 26 155 20 194 -11 25 -19 41 -22 117 -22 48 0 90 4 94 10 9 14 -19 72 -46 97 -45 41 -105 55 -249 59 -100 3 -149 0 -189 -11z"/>
+                        <path d="M950 1060 l0 -60 50 0 50 0 0 -90 0 -90 -50 0 -50 0 0 -60 0 -60 195 0 195 0 0 59 0 60 -47 3 -48 3 0 85 0 85 48 3 47 3 0 60 0 59 -195 0 -195 0 0 -60z"/>
+                        <path d="M2215 1058 c-16 -35 -59 -126 -97 -203 -37 -77 -68 -143 -68 -147 0 -5 43 -8 95 -8 92 0 96 1 107 25 11 25 13 25 128 25 115 0 117 0 128 -25 11 -24 14 -25 117 -25 58 0 105 2 105 5 0 3 -48 97 -106 210 l-106 205 -137 0 -137 0 -29 -62z"/>
+                    </g>
+                </svg>
+            </button>
+            
+            <!-- Grok Icon Button -->
+            <button class="model-pill-btn" data-model="grok" id="grok-server-btn" data-tooltip="Grok (xAI)">
+                <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor">
+                    <g transform="scale(5.33333,5.33333)">
+                        <path d="M18.542,30.532l15.956,-11.776c0.783,-0.576 1.902,-0.354 2.274,0.545c1.962,4.728 1.084,10.411 -2.819,14.315c-3.903,3.901 -9.333,4.756 -14.299,2.808l-5.423,2.511c7.778,5.315 17.224,4 23.125,-1.903c4.682,-4.679 6.131,-11.058 4.775,-16.812l0.011,0.011c-1.966,-8.452 0.482,-11.829 5.501,-18.735c0.116,-0.164 0.237,-0.33 0.357,-0.496l-6.602,6.599v-0.022l-22.86,22.958M15.248,33.392c-5.582,-5.329 -4.619,-13.579 0.142,-18.339c3.521,-3.522 9.294,-4.958 14.331,-2.847l5.412,-2.497c-0.974,-0.704 -2.224,-1.46 -3.659,-1.994c-6.478,-2.666 -14.238,-1.34 -19.505,3.922c-5.065,5.064 -6.659,12.851 -3.924,19.496c2.044,4.965 -1.307,8.48 -4.682,12.023c-1.199,1.255 -2.396,2.514 -3.363,3.844l15.241,-13.608"/>
+                    </g>
+                </svg>
+            </button>
+            
+            <!-- Bottom Server Actions -->
+            <div class="server-bottom-actions">
+                <button class="server-action-icon" id="open-settings-btn" data-tooltip="Настройки">
+                    <i class="bi bi-gear"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 2. Middle Sidebar: Dialogs & History -->
+        <aside class="sidebar-panel" id="sidebar-panel">
+            <div class="sidebar-header">
+                <div class="sidebar-brand-title">
+                    <div class="model-name-badge">
+                        <span class="model-status-dot"></span>
+                        <span id="sidebar-model-title">GigaChat</span>
                     </div>
+                    <button class="channel-action-btn" id="sidebar-collapse-btn" title="Скрыть">
+                        <i class="bi bi-layout-sidebar"></i>
+                    </button>
                 </div>
-
-                <!-- Channels Column -->
-                <div class="col-auto sidebar" id="sidebar" style="width: 220px">
-                    <div class="channel-list">
-                        <div class="p-3 fw-bold fs-5" id="ai-model-title">
-                            GigaChat AI
-                        </div>
-                        <div class="channel-category" id="chat-category">
-                            <div>
-                                <i
-                                    class="fa-solid fa-chevron-down me-1 chevron-icon"
-                                    id="category-chevron"
-                                ></i>
-                                ЧАТЫ
-                            </div>
-                            <div
-                                class="add-chat-btn"
-                                data-bs-toggle="modal"
-                                data-bs-target="#newChatModal"
-                            >
-                                <button type="button" class="btn">
-                                    Новый чат
-                                </button>
-                                <!-- <i class="fa-solid fa-plus"></i> -->
-                                <!-- <button
-                                    type="button"
-                                    class="btn btn-outline-danger"
-                                    id="confirm-delete-btn"
-                                >
-                                    Удалить
-                                </button> -->
-                            </div>
-                        </div>
-
-                        <div class="channels-container" id="channels-container">
-                            <div
-                                class="channel-item active"
-                                data-chat-id="general"
-                            >
-                                <i class="fa-solid fa-hashtag channel-icon"></i>
-                                общий-чат
+                
+                <button class="btn-new-chat" id="btn-create-new-chat" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Новый чат</span>
+                </button>
+            </div>
+            
+            <!-- Live Search -->
+            <div class="sidebar-search-box">
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="search-input" id="search-chats-input" placeholder="Поиск в диалогах...">
+                </div>
+            </div>
+            
+            <!-- Chat List Groups -->
+            <div class="sidebar-chats-container" id="sidebar-chats-container">
+                <!-- Pinned / Recent Group -->
+                <div class="chat-group-block" id="group-recent">
+                    <div class="chat-group-heading">Диалоги</div>
+                    <div class="chat-items-list" id="channels-container">
+                        <!-- Default Chat Item -->
+                        <div class="channel-item active" data-chat-id="general">
+                            <div class="channel-item-left">
+                                <i class="bi bi-chat-left-text channel-item-icon"></i>
+                                <span class="channel-item-title">общий-чат</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Sidebar Footer User Profile -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user-pill">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="user-info-text">
+                        <span class="user-info-name">Пользователь</span>
+                        <span class="user-info-status">Online • Pro</span>
+                    </div>
+                </div>
+                <button class="channel-action-btn" id="btn-export-chats-quick" title="Экспорт истории" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="bi bi-box-arrow-up"></i>
+                </button>
+            </div>
+        </aside>
 
-                <!-- Chat Area Column -->
-                <div class="col">
-                    <div class="chat-area">
-                        <div class="chat-header">
-                            <button
-                                class="btn btn-link text-decoration-none d-md-none me-2"
-                                id="toggle-sidebar"
-                            >
-                                <i
-                                    class="fa-solid fa-bars"
-                                    style="color: var(--discord-light)"
-                                ></i>
-                            </button>
-                            <i class="fa-solid fa-hashtag me-2"></i>
-                            <span class="fw-bold" id="current-chat-name"
-                                >общий-чат</span
-                            >
+        <!-- 3. Main Chat View -->
+        <main class="chat-main-area" id="chat-main-area">
+            <!-- Glass Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="mobile-toggle-btn" id="mobile-toggle-btn" aria-label="Меню">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="header-chat-title-group">
+                        <i class="bi bi-hash header-chat-icon"></i>
+                        <span class="header-chat-name" id="current-chat-name">общий-чат</span>
+                    </div>
+                    <div class="header-model-pill" id="header-model-pill">
+                        <i class="bi bi-cpu"></i>
+                        <span id="header-model-name">GigaChat-Pro</span>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <button class="header-btn" id="btn-clear-chat" title="Очистить сообщения чата">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                    <button class="header-btn" id="btn-export-chat" title="Экспорт диалога" data-bs-toggle="modal" data-bs-target="#exportModal">
+                        <i class="bi bi-download"></i>
+                    </button>
+                    <button class="header-btn" id="btn-theme-quick-toggle" title="Быстрая смена темы">
+                        <i class="bi bi-palette"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages Stream Area -->
+            <div class="chat-messages-container" id="chat-messages-container">
+                <div class="messages-inner-wrapper" id="chat-messages">
+                    <!-- Hero Welcome State (Shown on empty chat) -->
+                    <div class="chat-hero-screen" id="chat-hero-screen">
+                        <div class="hero-logo-box">
+                            <i class="bi bi-robot"></i>
                         </div>
-
-                        <div class="chat-messages" id="chat-messages">
-                            <div class="message assistant-message">
-                                <div class="message-avatar">G</div>
-                                <div class="message-content">
-                                    <div class="message-author">GigaChat</div>
-                                    <div class="message-text">
-                                        Привет! Я GigaChat. Чем могу помочь?
-                                    </div>
-                                </div>
+                        <h1 class="hero-title">Как я могу помочь вам сегодня?</h1>
+                        <p class="hero-subtitle">Задайте любой вопрос, попросите сгенерировать или проанализировать код, написать текст или решить сложную задачу.</p>
+                        
+                        <div class="hero-starters-grid">
+                            <div class="starter-card" data-prompt="Напиши на Go быстрый веб-сервер с graceful shutdown и middleware логирования">
+                                <i class="bi bi-code-slash starter-icon"></i>
+                                <span class="starter-card-title">Разработка на Go</span>
+                                <span class="starter-card-desc">Пример HTTP-сервера с graceful shutdown</span>
+                            </div>
+                            <div class="starter-card" data-prompt="Объясни квантовую запутанность простыми словами и приведи наглядную аналогию">
+                                <i class="bi bi-lightbulb starter-icon"></i>
+                                <span class="starter-card-title">Объяснение сложных тем</span>
+                                <span class="starter-card-desc">Квантовая физика простыми словами</span>
+                            </div>
+                            <div class="starter-card" data-prompt="Помоги составить структуру технического задания для современного AI веб-приложения">
+                                <i class="bi bi-file-earmark-text starter-icon"></i>
+                                <span class="starter-card-title">Создание документов</span>
+                                <span class="starter-card-desc">Структура ТЗ для ИИ платформы</span>
+                            </div>
+                            <div class="starter-card" data-prompt="Предложи 5 креативных идей для стартапа на стыке AI и автоматизации рутины">
+                                <i class="bi bi-rocket-takeoff starter-icon"></i>
+                                <span class="starter-card-title">Генерация идей</span>
+                                <span class="starter-card-desc">Креативные AI стартап концепции</span>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="loading-indicator" id="loading-indicator">
-                            <div class="spinner"></div>
-                            <div>AI печатает...</div>
+                <!-- Animated Typing Indicator -->
+                <div class="messages-inner-wrapper" id="typing-container" style="display: none;">
+                    <div class="message-row ai-row">
+                        <div class="message-avatar">
+                            <i class="bi bi-stars"></i>
                         </div>
+                        <div class="message-bubble-wrapper">
+                            <div class="typing-bubble">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <span class="typing-label" id="typing-model-label">AI печатает...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="chat-input-area">
-                            <input
-                                type="text"
-                                class="chat-input"
-                                id="message-input"
-                                placeholder="Спросите что-нибудь..."
-                                autocomplete="on"
-                            />
-                            <div class="send-button" id="send-button">
+            <!-- Scroll to Bottom Floating Button -->
+            <button class="scroll-bottom-btn" id="scroll-bottom-btn" title="Вниз">
+                <i class="bi bi-arrow-down"></i>
+            </button>
+
+            <!-- Modern Composer Input Box -->
+            <div class="chat-input-container">
+                <div class="composer-box">
+                    <textarea 
+                        id="message-input" 
+                        class="composer-textarea" 
+                        placeholder="Спросите что-нибудь у AI... (Shift + Enter для новой строки)" 
+                        rows="1"
+                    ></textarea>
+                    
+                    <div class="composer-bottom-bar">
+                        <div class="composer-tools-left">
+                            <button class="tool-icon-btn" id="btn-voice-input" title="Голосовой ввод (Web Speech API)">
+                                <i class="bi bi-mic"></i>
+                            </button>
+                            <button class="tool-icon-btn" id="btn-clear-input" title="Очистить поле">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="composer-tools-right">
+                            <span class="char-counter" id="char-counter">0 симв.</span>
+                            <button class="btn-send" id="send-button" title="Отправить сообщение" disabled>
                                 <i class="bi bi-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Drawer Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
+    <!-- Modal: New Chat -->
+    <div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newChatModalLabel">
+                        <i class="bi bi-plus-circle me-2 text-primary"></i>Создать новый диалог
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="chat-name" class="form-label text-muted small fw-bold">Название диалога</label>
+                        <input type="text" class="form-control" id="chat-name" placeholder="Например: Анализ данных или Проект Go" autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary btn-sm px-3" id="create-chat-btn">Создать диалог</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Delete Chat Confirmation -->
+    <div class="modal fade" id="deleteChatModal" tabindex="-1" aria-labelledby="deleteChatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="deleteChatModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Удалить диалог
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите удалить диалог «<strong id="delete-chat-name"></strong>»?</p>
+                    <p class="text-muted small mb-0">Вся история переписки в этом диалоге будет безвозвратно удалена.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger btn-sm px-3" id="confirm-delete-btn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Settings & Theme Selection -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">
+                        <i class="bi bi-sliders me-2 text-primary"></i>Настройки AI Studio
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">Тема интерфейса</label>
+                        <div class="theme-selector-grid">
+                            <div class="theme-card-option active" data-theme-val="slate">
+                                <div class="theme-preview-dot" style="background: #0f172a; border: 2px solid #6366f1;"></div>
+                                <span>Dark Slate</span>
+                            </div>
+                            <div class="theme-card-option" data-theme-val="oled">
+                                <div class="theme-preview-dot" style="background: #000000; border: 2px solid #3b82f6;"></div>
+                                <span>Midnight OLED</span>
+                            </div>
+                            <div class="theme-card-option" data-theme-val="light">
+                                <div class="theme-preview-dot" style="background: #ffffff; border: 2px solid #2563eb;"></div>
+                                <span>Light Minimal</span>
+                            </div>
+                            <div class="theme-card-option" data-theme-val="cyberpunk">
+                                <div class="theme-preview-dot" style="background: #0d0221; border: 2px solid #00f0ff;"></div>
+                                <span>Cyberpunk Neon</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label for="user-system-prompt" class="form-label text-muted small fw-bold">Системная инструкция (Custom Instructions)</label>
+                        <textarea class="form-control" id="user-system-prompt" rows="3" placeholder="Задайте стиль ответов (например: «Отвечай кратко, всегда форматируй код и используй русский язык»)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-dismiss="modal" id="save-settings-btn">Применить</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Overlay for mobile navigation -->
-        <div class="overlay" id="overlay"></div>
-
-        <!-- Mobile Navigation -->
-        <div class="mobile-nav">
-            <button class="nav-btn" id="show-servers">
-                <i class="fa-solid fa-server"></i>
-            </button>
-            <button class="nav-btn" id="show-channels">
-                <i class="fa-solid fa-hashtag"></i>
-            </button>
-            <button class="nav-btn active" id="show-chat">
-                <i class="fa-solid fa-comment"></i>
-            </button>
-        </div>
-
-        <!-- Modal for creating new chat -->
-        <div
-            class="modal fade"
-            id="newChatModal"
-            tabindex="-1"
-            aria-labelledby="newChatModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered">
-                <div
-                    class="modal-content bg-dark text-light border border-secondary"
-                >
-                    <div class="modal-header border-secondary">
-                        <h5 class="modal-title" id="newChatModalLabel">
-                            Создать новый чат
-                        </h5>
-                        <button
-                            type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        ></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="chat-name" class="form-label"
-                                >Название чата</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control bg-dark text-light border-secondary"
-                                id="chat-name"
-                                placeholder="Введите название чата"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="modal-footer border-secondary">
-                        <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            data-bs-dismiss="modal"
-                        >
-                            Отмена
+    <!-- Modal: Export Chat -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">
+                        <i class="bi bi-box-arrow-up me-2 text-primary"></i>Экспорт истории диалогов
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Выберите удобный формат для сохранения истории чатов на устройство:</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary text-start p-3" id="btn-export-markdown">
+                            <div class="fw-bold"><i class="bi bi-markdown me-2"></i>Экспорт в Markdown (.md)</div>
+                            <div class="small text-muted">Идеально для заметок в Obsidian, Notion или GitHub</div>
                         </button>
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            id="create-chat-btn"
-                        >
-                            Создать
+                        <button class="btn btn-outline-secondary text-start p-3" id="btn-export-json">
+                            <div class="fw-bold"><i class="bi bi-file-earmark-code me-2"></i>Экспорт в JSON (.json)</div>
+                            <div class="small text-muted">Полная резервная копия со всеми метаданными</div>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Modal for confirming chat deletion -->
-        <div
-            class="modal fade"
-            id="deleteChatModal"
-            tabindex="-1"
-            aria-labelledby="deleteChatModalLabel"
-            aria-hidden="true"
-            data-bs-theme="dark"
-        >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-dark text-light">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteChatModalLabel">
-                            Удалить чат
-                        </h5>
-                        <button
-                            type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>
-                            Вы уверены, что хотите удалить чат "<span
-                                id="delete-chat-name"
-                            ></span
-                            >"?
-                        </p>
-                        <p>
-                            Это действие нельзя отменить, и вся история
-                            сообщений будет потеряна.
-                        </p>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            id="confirm-delete-btn"
-                        >
-                            Удалить
-                        </button>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Закрыть</button>
                 </div>
             </div>
         </div>
-        <script>
-            const titleElement = document.getElementById("ai-model-title");
-            const path = window.location.pathname;
-            if (path === "/") {
-                titleElement.textContent = "GigaChat";
-            } else if (path === "/grok") {
-                titleElement.textContent = "Grok";
-            }
-        </script>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
-        <!-- Подсветка синтаксиса -->
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css"
-        />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-        <script src="script.js"></script>
-        <script>
-            // Автоматическая подсветка при загрузке и после динамического контента
-            document.addEventListener("DOMContentLoaded", function () {
-                hljs.highlightAll();
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
 
-                // Для динамически добавленного контента
-                const observer = new MutationObserver((mutations) => {
-                    hljs.highlightAll();
-                });
-            });
-        </script>
-    </body>
+    <!-- Scripts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Main Application JavaScript -->
+    <script src="script.js"></script>
+</body>
 </html>
