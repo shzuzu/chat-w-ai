@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -122,11 +121,12 @@ func GrokHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := cleanenv.ReadConfig("config.yaml", &cfg)
 	if err != nil {
-		log.Fatal("error config: ", err)
+		fmt.Printf("Config error: %v\n", err)
+		http.Error(w, `{"error": "Файл config.yaml не найден или имеет неверный формат"}`, http.StatusInternalServerError)
 		return
 	}
-	if cfg.GIGACHAT_API_KEY == "gigachat_api" {
-		log.Fatal("error config: ", err)
+	if cfg.GROK_API_KEY == "grok_api" || cfg.GROK_API_KEY == "" {
+		http.Error(w, `{"error": "API ключ Grok не указан в config.yaml"}`, http.StatusBadRequest)
 		return
 	}
 
@@ -296,6 +296,12 @@ func staticFileHandler(w http.ResponseWriter, r *http.Request) {
 		contentType = "image/jpeg"
 	case ".svg":
 		contentType = "image/svg+xml"
+	case ".ico":
+		contentType = "image/x-icon"
+	case ".webmanifest", ".manifest":
+		contentType = "application/manifest+json"
+	case ".json":
+		contentType = "application/json"
 	}
 
 	w.Header().Set("Content-Type", contentType)
